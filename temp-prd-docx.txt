@@ -1,0 +1,329 @@
+ 
+               PROCESS                REQUIREMENT                DOCUMENT                (PRD)  
+           
+                  Smart                      Booking                       Engine  
+                         952500    203920                                                                   
+           
+       	          Document         Overview  
+       	            Purpose  
+           This document defines the functional and process requirements for the          Smart Booking Engine       , which will manage venue bookings, scheduling, reporting, and analytics        with AI-powered insights.  
+      
+       	           Scope  
+           The system                 will:  
+      
+       	         Manage                venue                and                hall                 bookings  
+       	        Provide                calendar-based                 visualization  
+       	         Enable                booking                lifecycle                 management  
+       	        Generate                analytical                and                operational                 reports  
+       	        Integrate                AI                for                smart                insights                and                 reporting  
+      
+       	           Stakeholders  
+           
+                                         Role  
+                       Responsibility  
+                    Admin  
+                Full                system                control,                master                data         management  
+                    Event                Sales         Team  
+                Create/manage                bookings  
+                     Management  
+                View                reports                &                 analytics  
+              
+          
+       	                   System                       Overview  
+           The                system                will                consist                 of:  
+      
+       	         Booking                Management                 Engine  
+       	        Calendar                Visualization                 Module  
+       	         Master                Data                 Management  
+       	        Reporting                &                Analytics                 Engine  
+       	         AI                LLM                Integration                 Module  
+                     952500    296656                                                                   
+         
+       	            Process                 Flow  
+       	           Booking                Lifecycle                 Process  
+       	         Create Booking         Request  
+       	         Select                Venue                &                 Hall  
+       	         Check                 Availability  
+       	         Fill                Booking                 Details  
+       	          Validate                 Conflicts  
+       	         Save                 as:  
+       	         Tentative  
+       	         Confirmed  
+       	         Update                Status                (if                 required)  
+       	         Booking                Completion                (Post                 Event)  
+                     952500    288795                                                                   
+         
+       	          Calendar                Interaction                 Process  
+       	         User                opens                calendar         view  
+       	         System                loads                bookings                by                 date  
+       	         Events                displayed                with                color                 coding  
+       	         User clicks                on                 date:  
+       	         Popup                shows                all                 bookings  
+       	          User                 can:  
+       	        View                 details  
+       	         Edit                 booking  
+         
+       	            Reporting                 Process  
+       	         User                selects                report                 type  
+       	         Applies                filters                (industry,                sector,                date,         etc.)  
+       	         System                processes                 data  
+       	         Displays                report                 (table/chart)  
+       	         Option                to                export                 (PDF/Excel)  
+                     952500    296654                                                                   
+         
+       	           AI                Insights                 Process  
+       	         User                enters                query                (natural                 language)  
+       	         System                sends                request                to                AI                 module  
+       	         AI                processes                booking                 dataset  
+       	          Returns:  
+       	          Summary  
+       	         Insights  
+       	         Predictions  
+                     952500    291434                                                                   
+         
+       	           Functional                 Requirements  
+                         952500    208735                                                                   
+           
+       	           Calendar                 Module  
+           Features  
+          
+       	         Monthly                /                Weekly                /                Daily                 views  
+       	        Display                bookings                on                 dates  
+       	         Color                 coding:  
+       	        Event                 Status  
+       	         Event                 Type  
+       	         Popup                 view                 for                 selected                 date  
+      
+          Process                 Rules  
+          
+       	         Only                authorized                users can                edit         bookings  
+       	        Real-time                updates                on                 calendar  
+         
+       	            Booking                 Management  
+            Input                 Fields  
+          
+       	          Venue  
+       	          Organizer  
+       	        Event                Date                (Start–        End)  
+       	          Setup                 Date                 (Start–        End)  
+       	        Dismantle                Date                (Start–        End)  
+       	         Hall                Selection                (Venue-        based)  
+       	         Industry  
+       	        Multi-select                 Sectors  
+       	         Event                 Status  
+       	        Event                 Type  
+       	         Availability                 (Booked/Required)  
+      
+          Process                 Rules  
+          
+       	         Hall                must                belong to                selected                 venue  
+       	        Dates                must                 follow:  
+       	         Setup                ≤                Event                ≤                 Dismantle  
+       	        Conflict                detection                 mandatory  
+       	        Duplicate                booking                 prevention  
+                     952500    290640                                                                   
+         
+       	          Search                &                 Filter  
+           Features  
+          
+       	         Global                 search:  
+       	         Event                 Name  
+       	         Organizer  
+       	          Filters:  
+       	         Date                 range  
+       	          Venue  
+       	         Industry  
+       	          Status  
+         
+       	            User                 Management  
+             Roles  
+          
+       	          Admin  
+       	         Event                Sales                 Team  
+      
+            Permissions  
+           
+                                          Module  
+                       Admin  
+                       Sales  
+                    Booking  
+                Full  
+                Create/Edit  
+                    Masters  
+                Full  
+                View  
+                     Reports  
+                 Full  
+                 Limited  
+                            952500    203283                                                                   
+          
+       	          Master                Data         Management  
+             Masters  
+          
+       	          Venue  
+       	          Organizer  
+       	         Industry  
+       	          Sector  
+       	        Event                 Status  
+       	         Event                 Type  
+       	        Prime                Period                (HD                /                 LD)  
+      
+            Process                 Rules  
+          
+       	         Only                Admin                can                modify                 masters  
+       	        All                masters                used                in                 dropdowns  
+                     952500    297336                                                                   
+            
+       	            Reports                 Module  
+                         952500    192421                                                                   
+          
+       	          Competitive                 Analytics  
+          
+       	          Input:  
+       	         Industry  
+       	         Sector  
+       	          Output:  
+       	         Trends  
+       	         Competitor                 insights  
+                     952500    296880                                                                   
+      
+       	           Own                Shows                 (IEML)  
+          
+       	         Past                 events  
+       	         Upcoming                 events  
+       	        Probable                 events  
+                     952500    291017                                                                   
+      
+       	          Demand                 Analysis  
+          
+       	         High                Demand                vs                Low                 Demand  
+       	        Peak                booking                 periods  
+                     952500    297113                                                                   
+      
+       	          Hall                Allocation                 Report  
+          
+       	         Prime                date                 usage  
+       	        Hall                 occupancy  
+                     952500    290128                                                                   
+      
+       	          Conflict                 Report  
+          
+       	         Overlapping                 bookings  
+       	         Resource                 conflicts  
+         
+       	            Revenue                 Reports  
+          
+       	         Event-wise                 revenue  
+       	         Industry-wise                 revenue  
+       	        Date-wise                 revenue  
+                     952500    295447                                                                   
+      
+       	          Billing                 Report  
+          
+       	          Tentative                 vs                 Confirmed  
+       	        Payment                tracking                (if         enabled)  
+                     952500    288852                                                                   
+         
+       	       AI             LLM                Integration  
+             Features  
+          
+       	         Natural                language                 queries  
+       	         Auto-generated                 reports  
+       	        Predictive                 analytics  
+      
+           Sample                 Queries  
+          
+       	         “Show                high                demand                 months”  
+       	        “Top                revenue                 industries”  
+       	         “Upcoming                conflicting                 events”  
+                     952500    292855                                                                   
+         
+       	          Non-Functional                 Requirements  
+                         952500    210637                                                                   
+           
+       	           Performance  
+       	         Load                time                <                3                 seconds  
+       	        Support                1000+                concurrent                 users  
+         
+       	             Security  
+       	         Role-based                access                 control  
+       	         Data                 encryption  
+       	          Secure                 API                 access  
+                     952500    290358                                                                   
+         
+       	           Scalability  
+       	         Cloud-based                 infrastructure  
+       	         Modular                 architecture  
+                     952500    287293                                                                   
+         
+       	            Usability  
+       	         Responsive                 UI  
+       	        Easy                 navigation  
+       	        Minimal                training                 required  
+                     952500    285642                                                                   
+         
+       	           Reliability  
+       	      99.5%                uptime  
+       	          Regular                 backups  
+                     952500    294913                                                                   
+         
+       	          Data                 Requirements  
+             Key                 Entities  
+       	          Booking  
+       	         Venue  
+       	         Hall  
+       	          Organizer  
+      
+      
+      
+       	          Industry  
+         
+       	           Sector  
+       	        Event                 Status  
+       	         Event                 Type  
+                     952500    290338                                                                   
+         
+       	           Validation                 Rules  
+       	         Event                date                must                be                within                valid                 range  
+       	        Setup                date                ≤                Event                 date  
+       	         Dismantle                date                ≥                Event                 date  
+       	        No                overlapping                confirmed                 bookings  
+       	        Mandatory                fields                 validation  
+                     952500    297670                                                                   
+         
+       	          Integration                 Requirements  
+       	          Calendar                 APIs                 (optional         sync)  
+       	        AI/LLM                 APIs  
+       	         Email/SMS                notifications                 (optional)  
+                     952500    290158                                                                   
+         
+       	          Risks                &                 Dependencies  
+           
+                                          Risk  
+                        Mitigation  
+                    Data                 inconsistency  
+                 Validation                 rules  
+                   Booking                 conflicts  
+                Auto                 detection  
+                     AI                 inaccuracies  
+                 Manual                 override  
+              
+          
+       	                     Acceptance                       Criteria  
+       	         All                modules                 functional  
+       	         No                booking                conflicts                in                confirmed                 state  
+       	        Reports                generate                accurate                 data  
+       	         AI                responses                relevant                and                 usable  
+       	        System                passes                 UAT  
+                     952500    294717                                                                   
+         
+       	          Future                 Enhancements  
+       	          Mobile                 application  
+       	         Payment                 integration  
+       	         Automated                 reminders  
+       	         Advanced                predictive                 analytics  
+                     952500    287878                                                                   
+         
+              Conclusion  
+           This                PRD                ensures                a                structured                approach                to                developing                the                  Smart                    Booking                    Engine       , focusing                on                eﬃciency,                accuracy,                and                intelligent                decision-making                through        automation and AI.  
+       

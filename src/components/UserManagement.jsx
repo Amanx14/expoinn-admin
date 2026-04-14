@@ -1,37 +1,34 @@
-const users = [
-  { id: 1, name: 'Avinash Sharma',  role: 'Admin',      email: 'avinash@expoinn.com',    status: 'active',   initials: 'AS' },
-  { id: 2, name: 'Soonam Kapoor',   role: 'Sales Team', email: 'soonam@expoinn.com',     status: 'active',   initials: 'SK' },
-  { id: 3, name: 'Barun Kumar',     role: 'Sales Team', email: 'barun@expoinn.com',      status: 'active',   initials: 'BK' },
-  { id: 4, name: 'Tanuja Mishra',   role: 'Management', email: 'tanuja@expoinn.com',     status: 'active',   initials: 'TM' },
-  { id: 5, name: 'Salman Qureshi',  role: 'Sales Team', email: 'salman@expoinn.com',     status: 'inactive', initials: 'SQ' },
-];
-
 const roleColors = {
-  Admin:      { bg: 'rgba(201,168,76,0.15)',  txt: '#E8C96B' },
-  'Sales Team': { bg: 'rgba(107,158,201,0.15)', txt: '#93C5FD' },
-  Management: { bg: 'rgba(107,201,158,0.15)', txt: '#6EE7B7' },
+  Admin:              { bg: 'rgba(201,168,76,0.15)',  txt: '#E8C96B' },
+  'Event Sales Team': { bg: 'rgba(107,158,201,0.15)', txt: '#93C5FD' },
+  Management:         { bg: 'rgba(107,201,158,0.15)', txt: '#6EE7B7' },
 };
 
-export default function UserManagement() {
+export default function UserManagement({ 
+  users, 
+  onAddUser, 
+  onToggleUserStatus, 
+  onRemoveUser 
+}) {
   return (
     <div className="page">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h1>User Management</h1>
-          <p>Manage access for admin, sales team, and management users.</p>
+          <p>Manage access for admin, event sales team, and management users.</p>
         </div>
-        <button className="btn btn-primary btn-sm">+ Invite User</button>
+        <button className="btn btn-primary btn-sm" onClick={() => onAddUser({ id: users.length + 1, name: 'New User', role: 'Event Sales Team', email: 'new@expoinn.com', status: 'active', initials: 'NU' })}>+ Invite User</button>
       </div>
 
-      <div className="grid-2" style={{ marginBottom: 24 }}>
-        {['Admin','Sales Team','Management'].map(role => {
+      <div className="grid-3" style={{ marginBottom: 24 }}>
+        {['Admin','Event Sales Team','Management'].map(role => {
           const count = users.filter(u => u.role === role).length;
-          const rc = roleColors[role];
+          const rc = roleColors[role] || roleColors['Event Sales Team'];
           return (
             <div key={role} className="stat-card">
               <div className="stat-label">{role}</div>
               <div className="stat-value" style={{ fontSize: '2rem' }}>{count}</div>
-              <div className="stat-sub" style={{ color: rc.txt }}>{role === 'Admin' ? 'Full access' : role === 'Sales Team' ? 'Booking access' : 'Read & approve'}</div>
+              <div className="stat-sub" style={{ color: rc.txt }}>{role === 'Admin' ? 'Full access' : role === 'Event Sales Team' ? 'Booking access' : 'Read & approve'}</div>
             </div>
           );
         })}
@@ -50,8 +47,8 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody>
-            {users.map(u => {
-              const rc = roleColors[u.role];
+            {(users || []).map(u => {
+              const rc = roleColors[u.role] || roleColors['Sales Team'];
               return (
                 <tr key={u.id}>
                   <td>
@@ -69,14 +66,18 @@ export default function UserManagement() {
                     </span>
                   </td>
                   <td>
-                    <span className={`status-pill ${u.status === 'active' ? 'confirmed' : 'cancelled'}`}>
+                    <span 
+                      className={`status-pill ${u.status === 'active' ? 'confirmed' : 'cancelled'}`}
+                      style={{ cursor: 'pointer' }}
+                      onClick={() => onToggleUserStatus(u.id)}
+                    >
                       {u.status}
                     </span>
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button className="btn btn-ghost btn-sm">Edit</button>
-                      {u.id !== 1 && <button className="btn btn-ghost btn-sm" style={{ color: '#F87171', borderColor: 'rgba(239,68,68,0.25)' }}>Remove</button>}
+                      {u.role !== 'Admin' && <button className="btn btn-ghost btn-sm" style={{ color: '#F87171', borderColor: 'rgba(239,68,68,0.25)' }} onClick={() => onRemoveUser(u.id)}>Remove</button>}
                     </div>
                   </td>
                 </tr>
@@ -94,7 +95,7 @@ export default function UserManagement() {
             <tr>
               <th>Module</th>
               <th>Admin</th>
-              <th>Sales Team</th>
+              <th>Event Sales Team</th>
               <th>Management</th>
             </tr>
           </thead>

@@ -1,106 +1,152 @@
-import { Sparkles, TrendingUp, AlertCircle, Lightbulb, DollarSign } from 'lucide-react';
-import { aiInsights, halls, venues } from '../data/staticData';
-
-const icons = [TrendingUp, AlertCircle, Lightbulb, DollarSign];
+import { useMemo } from 'react';
+import { 
+  Sparkles, 
+  TrendingUp, 
+  AlertTriangle, 
+  Lightbulb, 
+  ArrowRight
+} from 'lucide-react';
+import { aiResponses } from '../data/staticData';
 
 export default function AIInsights({ bookings }) {
-  const upcoming = bookings.filter(b => b.status === 'tentative');
+  const upcoming = useMemo(() => {
+    return [...bookings]
+      .filter(b => b.status.toLowerCase() === 'tentative')
+      .sort((a, b) => new Date(a.eventStartDate).getTime() - new Date(b.eventStartDate).getTime());
+  }, [bookings]);
+
+  const exportAnalysis = () => {
+    const headers = ['Booking ID', 'Event Name', 'Status', 'Date', 'Revenue (L)'];
+    const rows = upcoming.map(b => [b.id, b.eventName, b.status, b.eventStartDate, (b.revenue / 100000).toFixed(1)]);
+    
+    let csv = headers.join(',') + '\n';
+    rows.forEach(r => { csv += r.join(',') + '\n'; });
+
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `AI_Analysis_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="page">
-      <div className="page-header" style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
-          <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ color: 'var(--gold)' }}>✦</span> AI Insights
-          </h1>
-          <p>Natural language intelligence powered by your booking data.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{ background: 'linear-gradient(135deg, var(--gold), #8A6E2E)', padding: 6, borderRadius: 8 }}>
+              <Sparkles size={18} style={{ color: 'var(--bg-base)' }} />
+            </div>
+            <h1 style={{ margin: 0 }}>AI Insights</h1>
+          </div>
+          <p>Intelligent analysis of booking patterns, revenue trends, and operational risks.</p>
         </div>
-        <div style={{ display: 'flex', align: 'center', gap: 8, padding: '8px 14px', background: 'var(--gold-faint)', border: '1px solid var(--gold-border)', borderRadius: 'var(--radius-md)', fontSize: '0.78rem', color: 'var(--gold)' }}>
-          <Sparkles size={13} style={{ marginRight: 4 }} />
-          AI Module Active
-        </div>
+        <button className="btn btn-ghost btn-sm" onClick={exportAnalysis}>
+          Export Analysis
+        </button>
       </div>
 
-      {/* Big insights */}
-      <div className="grid-2" style={{ marginBottom: 24 }}>
-        {aiInsights.map((ins, i) => {
-          const Icon = icons[i % icons.length];
-          return (
-            <div key={i} className="ai-insight-card" style={{ padding: 22 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-                <div className="ai-insight-tag">{ins.tag}</div>
-                <div style={{ width: 34, height: 34, borderRadius: 'var(--radius-md)', background: 'var(--gold-faint)', border: '1px solid var(--gold-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)' }}>
-                  <Icon size={15} />
+      <div className="grid-7030" style={{ alignItems: 'flex-start' }}>
+        <div>
+          {/* AI Response Cards */}
+          <div className="grid-2" style={{ marginBottom: 24 }}>
+            {Object.entries(aiResponses).map(([query, response], i) => (
+              <div key={i} className="card" style={{ borderLeft: '3px solid var(--gold)' }}>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <div style={{ marginTop: 2 }}>
+                    {i % 2 === 0 ? <TrendingUp size={16} style={{ color: 'var(--gold)' }} /> : <Lightbulb size={16} style={{ color: 'var(--gold)' }} />}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 6 }}>{query}</div>
+                    <div style={{ fontSize: '0.86rem', lineHeight: 1.6, color: 'var(--text-secondary)' }}>
+                      {response.split('**').map((part, idx) => idx % 2 === 1 ? <strong key={idx} style={{ color: 'var(--text-primary)' }}>{part}</strong> : part)}
+                    </div>
+                  </div>
                 </div>
               </div>
-              {ins.value && <div className="ai-insight-val" style={{ marginBottom: 8 }}>{ins.value}</div>}
-              <div className="ai-insight-text">{ins.text}</div>
-            </div>
-          );
-        })}
-      </div>
+            ))}
+          </div>
 
-      {/* Tentative bookings needing attention */}
-      <div className="card" style={{ marginBottom: 20 }}>
-        <div className="card-title" style={{ marginBottom: 4 }}>Bookings Needing Attention</div>
-        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: 18 }}>Tentative bookings without deposit confirmation</div>
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Booking</th>
-              <th>Event</th>
-              <th>Revenue at Stake</th>
-              <th>Days Until Event</th>
-              <th>AI Recommendation</th>
-            </tr>
-          </thead>
-          <tbody>
-            {upcoming.map(b => {
-              const eventDate = new Date(b.eventDate);
-              const today     = new Date();
-              const daysLeft  = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
-              const priority  = daysLeft < 20 ? 'High' : daysLeft < 40 ? 'Medium' : 'Low';
-              const priorityColor = { High: '#F87171', Medium: '#FBBF24', Low: '#4ADE80' }[priority];
-              return (
-                <tr key={b.id}>
-                  <td style={{ color: 'var(--gold)', fontWeight: 500, fontSize: '0.82rem' }}>{b.id}</td>
-                  <td>
-                    <div style={{ fontWeight: 500, fontSize: '0.86rem' }}>{b.eventName}</div>
-                    <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)' }}>{b.eventDate}</div>
-                  </td>
-                  <td style={{ fontWeight: 500 }}>₹{(b.revenue / 100000).toFixed(1)}L</td>
-                  <td>
-                    <span style={{ color: priorityColor, fontWeight: 500 }}>{daysLeft}d</span>
-                    <span style={{ fontSize: '0.72rem', color: priorityColor, marginLeft: 6, background: `${priorityColor}18`, padding: '1px 7px', borderRadius: 99 }}>{priority}</span>
-                  </td>
-                  <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                    {daysLeft < 20 ? 'Send final confirmation request immediately.' : 'Follow up within 5 business days.'}
-                  </td>
+          <div className="card">
+            <div className="card-title" style={{ marginBottom: 18 }}>Immediate Attention Required</div>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Booking ID</th>
+                  <th>Event Details</th>
+                  <th>Revenue</th>
+                  <th>Urgency</th>
+                  <th>AI Recommendation</th>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {upcoming.map(b => {
+                  const eventDate = new Date(b.eventStartDate);
+                  const today     = new Date();
+                  const daysLeft  = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+                  const priority  = daysLeft < 20 ? 'High' : daysLeft < 40 ? 'Medium' : 'Low';
+                  const priorityColor = { High: '#F87171', Medium: '#FBBF24', Low: '#4ADE80' }[priority];
+                  return (
+                    <tr key={b.id}>
+                      <td style={{ color: 'var(--gold)', fontWeight: 600, fontSize: '0.82rem' }}>{b.id}</td>
+                      <td>
+                        <div style={{ fontWeight: 600, fontSize: '0.86rem' }}>{b.eventName}</div>
+                        <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)' }}>{b.eventStartDate}</div>
+                      </td>
+                      <td style={{ fontWeight: 600 }}>₹{(b.revenue / 100000).toFixed(1)}L</td>
+                      <td>
+                        <span style={{ color: priorityColor, fontWeight: 600 }}>{daysLeft}d</span>
+                        <span style={{ fontSize: '0.72rem', color: priorityColor, marginLeft: 6, background: `${priorityColor}18`, padding: '1px 7px', borderRadius: 99 }}>{priority}</span>
+                      </td>
+                      <td style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                        {daysLeft < 20 ? 'Send final confirmation request immediately.' : 'Follow up within 5 business days.'}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-      {/* Demand forecast strip */}
-      <div className="card">
-        <div className="card-title" style={{ marginBottom: 16 }}>May–June Demand Forecast</div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
-          {[
-            { period: 'May Week 1–2', occupancy: 88, label: 'High demand', color: '#F87171' },
-            { period: 'May Week 3–4', occupancy: 72, label: 'Moderate', color: '#FBBF24' },
-            { period: 'June Week 1–2', occupancy: 61, label: 'Available', color: '#4ADE80' },
-          ].map((f, i) => (
-            <div key={i} style={{ background: 'var(--bg-overlay)', borderRadius: 'var(--radius-md)', padding: 16, border: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: 8 }}>{f.period}</div>
-              <div style={{ fontSize: '1.5rem', fontFamily: 'var(--font-display)', fontWeight: 600, color: f.color, marginBottom: 4 }}>{f.occupancy}%</div>
-              <div style={{ fontSize: '0.76rem', color: 'var(--text-secondary)', marginBottom: 10 }}>{f.label}</div>
-              <div className="progress-bar-wrap">
-                <div className="progress-bar-fill" style={{ width: `${f.occupancy}%`, background: `linear-gradient(90deg, ${f.color}80, ${f.color})` }} />
+        <div style={{ position: 'sticky', top: 80 }}>
+          <div className="card" style={{ background: 'linear-gradient(to bottom, rgba(201,168,76,0.08), transparent)' }}>
+            <div className="section-title">Ask AI Engine</div>
+            <div style={{ position: 'relative', marginBottom: 16 }}>
+              <textarea 
+                className="form-input" 
+                placeholder="Ask about revenue trends, conflicts, or demand forecasting..." 
+                rows={4}
+                style={{ resize: 'none', padding: '12px', fontSize: '0.84rem' }}
+              />
+              <button className="btn btn-primary btn-sm" style={{ position: 'absolute', right: 8, bottom: 8, padding: '4px 8px' }}>
+                <ArrowRight size={14} />
+              </button>
+            </div>
+            
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: 12 }}>SUGGESTED QUERIES</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {['Highest revenue sectors?', 'Risk of cancellation?', 'Q4 demand forecast?'].map(q => (
+                <div key={q} style={{ fontSize: '0.78rem', color: 'var(--gold)', cursor: 'pointer', padding: '6px 10px', background: 'rgba(201,168,76,0.05)', borderRadius: 6, border: '1px solid rgba(201,168,76,0.1)' }}>
+                  {q}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="card" style={{ marginTop: 20 }}>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <AlertTriangle size={18} style={{ color: '#FBBF24', flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: '0.84rem', fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>Anomaly Detected</div>
+                <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+                  Bharat Mandapam Hall 2 shows unusually high setup duration (4 days) for a Corporate Event. Check logistics.
+                </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </div>
     </div>

@@ -1,191 +1,215 @@
-export const venues = [
-  { id: 'v1', name: 'India Expo Centre', location: 'Greater Noida, UP', halls: ['h1','h2','h3','h4'], color: '#C9A84C' },
-  { id: 'v2', name: 'ExpoInn Convention', location: 'Knowledge Park II', halls: ['h5','h6'], color: '#6B9EC9' },
-];
+// ═══════════════════════════════════════════════════════
+// MOCK DATABASE — Static JSON for Smart Booking Engine
+// ═══════════════════════════════════════════════════════
 
-export const halls = [
-  { id: 'h1', venueId: 'v1', name: 'Grand Ballroom', capacity: 2000, area: '4500 sqm', type: 'Banquet / Exhibition', icon: '🏛️' },
-  { id: 'h2', venueId: 'v1', name: 'Convention Hall A', capacity: 800, area: '1800 sqm', type: 'Conference', icon: '🎤' },
-  { id: 'h3', venueId: 'v1', name: 'Convention Hall B', capacity: 500, area: '1200 sqm', type: 'Conference', icon: '🎤' },
-  { id: 'h4', venueId: 'v1', name: 'Exhibition Pavilion', capacity: 5000, area: '9000 sqm', type: 'Exhibition', icon: '🏗️' },
-  { id: 'h5', venueId: 'v2', name: 'The Grand Ballroom', capacity: 400, area: '850 sqm', type: 'Banquet / Wedding', icon: '💍' },
-  { id: 'h6', venueId: 'v2', name: 'Business Suite', capacity: 120, area: '320 sqm', type: 'Meeting', icon: '💼' },
-];
+export const masterData = {
+  venues: [
+    { 
+      id: "v1", 
+      name: "Bharat Mandapam", 
+      location: "New Delhi", 
+      color: "#C9A84C",
+      coverImage: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=2069&auto=format&fit=crop",
+      halls: [
+        { name: "Hall 1", image: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 2", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 3", image: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 4", image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 5", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" }
+      ] 
+    },
+    { 
+      id: "v2", 
+      name: "Pragati Maidan", 
+      location: "New Delhi", 
+      color: "#6B9EC9",
+      coverImage: "https://images.unsplash.com/photo-1506146332389-18140dc7b2fb?q=80&w=2069&auto=format&fit=crop",
+      halls: [
+        { name: "Hall A", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall B", image: "https://images.unsplash.com/photo-1502633598306-cf81bb14386d?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall C", image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall D", image: "https://images.unsplash.com/photo-1520242739010-44e95bde329e?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall E", image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1000&auto=format&fit=crop" }
+      ] 
+    },
+    { 
+      id: "v3", 
+      name: "Expo Mart", 
+      location: "Greater Noida", 
+      color: "#C96B9E",
+      coverImage: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=2069&auto=format&fit=crop",
+      halls: [
+        { name: "Expo 1", image: "https://images.unsplash.com/photo-1514525253344-9675669f9a4a?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 2", image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 3", image: "https://images.unsplash.com/photo-1516450360452-9312f5e36fc7?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 4", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" }
+      ] 
+    },
+  ],
+  organizers: [
+    "AI Summit Secretariat", "Startup India", "CII Events", "NASSCOM", "FICCI",
+    "Auto Expo Group", "Fashion Design Council", "Pharma India", "AgriTech Forum", "EdTech Alliance"
+  ],
+  industries: [
+    "Technology & IT", "Automotive", "Medical & Pharma", "Education",
+    "Fashion & Apparel", "Agriculture", "Real Estate", "FMCG", "Defense"
+  ],
+  sectors: [
+    "Software", "Hardware", "Electric Vehicles", "Medical Devices",
+    "EdTech", "Textiles", "Commercial", "Consumer Electronics", "Aerospace"
+  ],
+  eventStatus: ["Tentative", "Confirmed", "Cancelled", "Completed"],
+  eventTypes: ["Corporate Event", "Exhibition", "Wedding", "Entertainment", "Conference"],
+  primePeriods: [
+    { label: "Jan-Mar (HD)", type: "HD" },
+    { label: "Apr-Jun (LD)", type: "LD" },
+    { label: "Jul-Sep (HD)", type: "HD" },
+    { label: "Oct-Dec (HD)", type: "HD" },
+  ]
+};
 
-export const organizers = [
-  { id: 'org1', name: 'EPCH — Export Promotion Council', contact: 'Rakesh Verma', phone: '+91-11-26153891' },
-  { id: 'org2', name: 'M3M India Pvt. Ltd.', contact: 'Sanjay Khanna', phone: '+91-9871234567' },
-  { id: 'org3', name: 'IDBS Events', contact: 'Priya Sharma', phone: '+91-9811234567' },
-  { id: 'org4', name: 'Veersa Technologies', contact: 'Arjun Singh', phone: '+91-9845678901' },
-  { id: 'org5', name: 'Royal Wedding Co.', contact: 'Meena Agarwal', phone: '+91-9312345678' },
-  { id: 'org6', name: 'Confederation of Indian Industry', contact: 'Deepak Nair', phone: '+91-11-45771000' },
-];
-
-export const bookings = [
+// Rich seed bookings
+export const initialBookings = [
   {
-    id: 'BK-2025-001',
-    venueId: 'v1',
-    hallId: 'h1',
-    organizerId: 'org1',
-    eventName: 'EPCH Home Textiles Expo 2025',
-    sector: 'Textiles & Handicrafts',
-    industry: 'Export Promotion',
-    eventType: 'Exhibition',
-    setupDate: '2025-04-10',
-    eventDate: '2025-04-12',
-    dismantleDate: '2025-04-15',
-    status: 'confirmed',
-    revenue: 2850000,
+    id: "b1", organizer: "AI Summit Secretariat", venueId: "v1", hall: "Hall 1",
+    eventName: "AI Summit 2026", // Added name field
+    industry: "Technology & IT", sectors: ["Software"], eventType: "Corporate Event",
+    status: "confirmed", setupDate: "2026-04-10", eventStartDate: "2026-04-12",
+    eventEndDate: "2026-04-14", dismantleDate: "2026-04-15", guests: 5000, revenue: 1200000,
   },
   {
-    id: 'BK-2025-002',
-    venueId: 'v2',
-    hallId: 'h5',
-    organizerId: 'org5',
-    eventName: 'Sharma–Gupta Wedding Reception',
-    sector: 'Social',
-    industry: 'Wedding',
-    eventType: 'Wedding',
-    setupDate: '2025-04-18',
-    eventDate: '2025-04-19',
-    dismantleDate: '2025-04-20',
-    status: 'confirmed',
-    revenue: 480000,
+    id: "b2", organizer: "Startup India", venueId: "v2", hall: "Hall A",
+    eventName: "Startup India Expo",
+    industry: "Technology & IT", sectors: ["Software", "Hardware"], eventType: "Exhibition",
+    status: "tentative", setupDate: "2026-04-18", eventStartDate: "2026-04-20",
+    eventEndDate: "2026-04-22", dismantleDate: "2026-04-23", guests: 12000, revenue: 2500000,
   },
   {
-    id: 'BK-2025-003',
-    venueId: 'v1',
-    hallId: 'h2',
-    organizerId: 'org6',
-    eventName: 'CII Digital India Summit',
-    sector: 'Technology',
-    industry: 'IT & Telecom',
-    eventType: 'Conference',
-    setupDate: '2025-04-22',
-    eventDate: '2025-04-23',
-    dismantleDate: '2025-04-24',
-    status: 'tentative',
-    revenue: 1200000,
+    id: "b3", organizer: "CII Events", venueId: "v1", hall: "Hall 3",
+    eventName: "EV Expo 2026",
+    industry: "Automotive", sectors: ["Electric Vehicles"], eventType: "Exhibition",
+    status: "confirmed", setupDate: "2026-04-25", eventStartDate: "2026-04-27",
+    eventEndDate: "2026-04-30", dismantleDate: "2026-05-01", guests: 20000, revenue: 4500000,
   },
   {
-    id: 'BK-2025-004',
-    venueId: 'v1',
-    hallId: 'h4',
-    organizerId: 'org2',
-    eventName: 'M3M Realty Showcase 2025',
-    sector: 'Real Estate',
-    industry: 'Construction & Housing',
-    eventType: 'Exhibition',
-    setupDate: '2025-05-02',
-    eventDate: '2025-05-04',
-    dismantleDate: '2025-05-06',
-    status: 'confirmed',
-    revenue: 3600000,
+    id: "b4", organizer: "Fashion Design Council", venueId: "v3", hall: "Expo 1",
+    eventName: "Fashion Week 2026",
+    industry: "Fashion & Apparel", sectors: ["Textiles"], eventType: "Exhibition",
+    status: "confirmed", setupDate: "2026-03-05", eventStartDate: "2026-03-08",
+    eventEndDate: "2026-03-12", dismantleDate: "2026-03-13", guests: 8000, revenue: 1800000,
   },
   {
-    id: 'BK-2025-005',
-    venueId: 'v2',
-    hallId: 'h6',
-    organizerId: 'org4',
-    eventName: 'Veersa Tech Product Launch',
-    sector: 'Technology',
-    industry: 'Software',
-    eventType: 'Product Launch',
-    setupDate: '2025-05-08',
-    eventDate: '2025-05-08',
-    dismantleDate: '2025-05-09',
-    status: 'tentative',
-    revenue: 185000,
+    id: "b5", organizer: "Pharma India", venueId: "v2", hall: "Hall B",
+    eventName: "Pharma Summit",
+    industry: "Medical & Pharma", sectors: ["Medical Devices"], eventType: "Conference",
+    status: "completed", setupDate: "2026-02-10", eventStartDate: "2026-02-12",
+    eventEndDate: "2026-02-14", dismantleDate: "2026-02-15", guests: 3000, revenue: 900000,
   },
   {
-    id: 'BK-2025-006',
-    venueId: 'v1',
-    hallId: 'h3',
-    organizerId: 'org3',
-    eventName: 'IDBS Banking Innovation Forum',
-    sector: 'Banking & Finance',
-    industry: 'BFSI',
-    eventType: 'Seminar',
-    setupDate: '2025-05-14',
-    eventDate: '2025-05-15',
-    dismantleDate: '2025-05-15',
-    status: 'draft',
-    revenue: 750000,
+    id: "b6", organizer: "NASSCOM", venueId: "v1", hall: "Hall 2",
+    eventName: "NASSCOM Tech Days",
+    industry: "Technology & IT", sectors: ["Software", "Hardware"], eventType: "Conference",
+    status: "confirmed", setupDate: "2026-05-10", eventStartDate: "2026-05-12",
+    eventEndDate: "2026-05-15", dismantleDate: "2026-05-16", guests: 7000, revenue: 2100000,
   },
   {
-    id: 'BK-2025-007',
-    venueId: 'v1',
-    hallId: 'h1',
-    organizerId: 'org2',
-    eventName: 'Auto Expo Preview Night',
-    sector: 'Automotive',
-    industry: 'Manufacturing',
-    eventType: 'Exhibition',
-    setupDate: '2025-05-19',
-    eventDate: '2025-05-20',
-    dismantleDate: '2025-05-22',
-    status: 'confirmed',
-    revenue: 2200000,
+    id: "b7", organizer: "FICCI", venueId: "v2", hall: "Hall C",
+    eventName: "Consumer Tech Expo",
+    industry: "FMCG", sectors: ["Consumer Electronics"], eventType: "Exhibition",
+    status: "tentative", setupDate: "2026-05-20", eventStartDate: "2026-05-22",
+    eventEndDate: "2026-05-25", dismantleDate: "2026-05-26", guests: 15000, revenue: 3200000,
   },
   {
-    id: 'BK-2025-008',
-    venueId: 'v2',
-    hallId: 'h5',
-    organizerId: 'org5',
-    eventName: 'Kapoor Wedding Ceremony',
-    sector: 'Social',
-    industry: 'Wedding',
-    eventType: 'Wedding',
-    setupDate: '2025-05-23',
-    eventDate: '2025-05-24',
-    dismantleDate: '2025-05-25',
-    status: 'confirmed',
-    revenue: 390000,
+    id: "b8", organizer: "Auto Expo Group", venueId: "v1", hall: "Hall 4",
+    eventName: "Auto Expo 2026",
+    industry: "Automotive", sectors: ["Electric Vehicles"], eventType: "Exhibition",
+    status: "confirmed", setupDate: "2026-06-01", eventStartDate: "2026-06-04",
+    eventEndDate: "2026-06-08", dismantleDate: "2026-06-09", guests: 30000, revenue: 8000000,
+  },
+  {
+    id: "b9", organizer: "AgriTech Forum", venueId: "v3", hall: "Expo 2",
+    eventName: "AgriTech Summit",
+    industry: "Agriculture", sectors: ["Commercial"], eventType: "Conference",
+    status: "tentative", setupDate: "2026-04-05", eventStartDate: "2026-04-07",
+    eventEndDate: "2026-04-09", dismantleDate: "2026-04-10", guests: 2000, revenue: 500000,
+  },
+  {
+    id: "b10", organizer: "EdTech Alliance", venueId: "v2", hall: "Hall D",
+    eventName: "EdTech Conf 2026",
+    industry: "Education", sectors: ["EdTech"], eventType: "Conference",
+    status: "confirmed", setupDate: "2026-04-02", eventStartDate: "2026-04-03",
+    eventEndDate: "2026-04-04", dismantleDate: "2026-04-05", guests: 1500, revenue: 400000,
   },
 ];
 
-export const revenueData = [
-  { month: 'Nov', revenue: 4.2, bookings: 8 },
-  { month: 'Dec', revenue: 6.8, bookings: 13 },
-  { month: 'Jan', revenue: 5.1, bookings: 9 },
-  { month: 'Feb', revenue: 7.3, bookings: 14 },
-  { month: 'Mar', revenue: 8.9, bookings: 17 },
-  { month: 'Apr', revenue: 11.2, bookings: 21 },
+// Monthly occupancy data
+export const occupancyData = {
+  months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+  v1: [62, 54, 87, 78, 65, 48, 52, 70, 83, 92, 74, 68],
+  v2: [70, 60, 75, 85, 72, 55, 60, 65, 78, 88, 80, 72],
+  v3: [45, 38, 68, 55, 50, 35, 40, 55, 70, 78, 60, 50],
+};
+
+// Revenue data by industry
+export const revenueByIndustry = [
+  { industry: "Technology & IT", revenue: 5800000, bookings: 4 },
+  { industry: "Automotive", revenue: 12500000, bookings: 2 },
+  { industry: "Medical & Pharma", revenue: 900000, bookings: 1 },
+  { industry: "Fashion & Apparel", revenue: 1800000, bookings: 1 },
+  { industry: "FMCG", revenue: 3200000, bookings: 1 },
+  { industry: "Agriculture", revenue: 500000, bookings: 1 },
+  { industry: "Education", revenue: 400000, bookings: 1 },
 ];
 
-export const hallOccupancyData = [
-  { name: 'Grand Ballroom', occupancy: 82, bookings: 14 },
-  { name: 'Conv. Hall A', occupancy: 67, bookings: 11 },
-  { name: 'Conv. Hall B', occupancy: 54, bookings: 9 },
-  { name: 'Expo Pavilion', occupancy: 71, bookings: 12 },
-  { name: 'ExpoInn Ballroom', occupancy: 88, bookings: 15 },
-  { name: 'Business Suite', occupancy: 45, bookings: 8 },
+// Activity feed
+export const recentActivity = [
+  { time: "2 min ago", action: "Booking Confirmed", detail: "AI Summit — Hall 1, Bharat Mandapam", type: "success" },
+  { time: "15 min ago", action: "Tentative Created", detail: "Startup India — Hall A, Pragati Maidan", type: "warning" },
+  { time: "1 hr ago", action: "Conflict Resolved", detail: "CII Events moved to Hall 3", type: "info" },
+  { time: "3 hrs ago", action: "Booking Completed", detail: "Pharma India — Hall B, Pragati Maidan", type: "success" },
+  { time: "5 hrs ago", action: "New Inquiry", detail: "AgriTech Forum interested in Expo 2", type: "info" },
+  { time: "1 day ago", action: "Payment Received", detail: "₹12,00,000 — AI Summit Secretariat", type: "success" },
 ];
 
-export const sectorData = [
-  { name: 'Exhibition', value: 38, color: '#C9A84C' },
-  { name: 'Conference', value: 24, color: '#6B9EC9' },
-  { name: 'Wedding', value: 20, color: '#C96B9E' },
-  { name: 'Corporate', value: 12, color: '#6BC99E' },
-  { name: 'Other', value: 6, color: '#9E9E6B' },
+// AI mock responses
+export const aiResponses = {
+  "show high demand months": "Based on booking data, **October** (92% occupancy) and **March** (87% occupancy) are peak demand months at Bharat Mandapam. Technology & Automotive industries drive 65% of bookings during these periods. Consider premium pricing for Oct-Dec quarter.",
+  "top revenue industries": "**Automotive** leads with ₹1.25 Cr across 2 bookings, followed by **Technology & IT** at ₹58L across 4 bookings. The average revenue per Automotive event (₹62.5L) is 3x higher than Technology events (₹14.5L).",
+  "upcoming conflicting events": "No active conflicts detected. However, **Startup India** (Apr 18-23, Tentative) and a potential new booking for Hall A could overlap. Recommend confirming or releasing the tentative hold by Apr 15.",
+  "demand forecast": "Based on historical patterns, **Q4 2026** will see 35% higher demand than Q2. Bharat Mandapam Hall 1 and Hall 4 are likely to be fully booked. Recommend opening advance bookings for Oct-Dec now.",
+  "revenue summary": "**YTD Revenue: ₹2.52 Cr** across 10 bookings. Confirmed bookings account for 78% of revenue. Average booking value: ₹25.2L. Projected annual revenue at current pace: ₹5.04 Cr.",
+};
+
+// Users (kept from previous setup)
+export const users = [
+  { id: 1, name: 'Avinash Sharma', role: 'Admin', email: 'avinash@expoinn.com', status: 'active', initials: 'AS' },
+  { id: 2, name: 'Soonam Kapoor', role: 'Event Sales Team', email: 'soonam@expoinn.com', status: 'active', initials: 'SK' },
+  { id: 3, name: 'Barun Kumar', role: 'Event Sales Team', email: 'barun@expoinn.com', status: 'active', initials: 'BK' },
+  { id: 4, name: 'Tanuja Mishra', role: 'Admin', email: 'tanuja@expoinn.com', status: 'active', initials: 'TM' },
+  { id: 5, name: 'Salman Qureshi', role: 'Event Sales Team', email: 'salman@expoinn.com', status: 'inactive', initials: 'SQ' },
 ];
 
-export const aiInsights = [
-  {
-    tag: 'Revenue Forecast',
-    value: '₹1.4 Cr',
-    text: 'May revenue is projected to exceed April by 24% based on confirmed bookings and historical patterns for this period.',
-  },
-  {
-    tag: 'Peak Demand',
-    text: 'Weekends in May–June show 93% occupancy for banquet halls. Consider dynamic pricing for weekend slots.',
-  },
-  {
-    tag: 'Cancellation Risk',
-    text: '2 tentative bookings (BK-2025-003, BK-2025-005) have not received deposit confirmation — follow-up recommended within 48 hours.',
-  },
-  {
-    tag: 'Upsell Opportunity',
-    text: 'Wedding bookings convert to catering packages at 78% rate. Proactive outreach to BK-2025-008 recommended.',
-  },
-];
+// Helpers
+export function isDateOverlap(start1, end1, start2, end2) {
+  return Math.max(new Date(start1).getTime(), new Date(start2).getTime()) <=
+         Math.min(new Date(end1).getTime(), new Date(end2).getTime());
+}
+
+export function checkConflicts(bookings, newBooking) {
+  return bookings.filter(b => {
+    if (b.id === newBooking.id) return false;
+    if (b.status === "Cancelled") return false;
+    if (b.venueId !== newBooking.venueId || b.hall !== newBooking.hall) return false;
+    return isDateOverlap(b.setupDate, b.dismantleDate, newBooking.setupDate, newBooking.dismantleDate);
+  });
+}
+
+export function getVenueName(id) {
+  return masterData.venues.find(v => v.id === id)?.name || "Unknown";
+}
+
+export function formatCurrency(num) {
+  if (num >= 10000000) return `₹${(num / 10000000).toFixed(1)} Cr`;
+  if (num >= 100000) return `₹${(num / 100000).toFixed(1)}L`;
+  return `₹${num.toLocaleString("en-IN")}`;
+}
