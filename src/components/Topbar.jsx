@@ -12,7 +12,7 @@ const pageTitles = {
   users:        'User Management',
 };
 
-export default function Topbar({ page, onNav }) {
+export default function Topbar({ page, onNav, onAddClick }) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -20,7 +20,11 @@ export default function Topbar({ page, onNav }) {
     <header className="topbar">
       <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
         <span className="topbar-title">{pageTitles[page]}</span>
-        {page !== 'new-booking' && (
+        {page === 'users' ? (
+          <button className="btn btn-primary btn-sm" onClick={onAddClick} style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
+            <Plus size={14} style={{ marginRight: 4 }} /> Add User
+          </button>
+        ) : page !== 'new-booking' && (
           <button className="btn btn-primary btn-sm" onClick={() => onNav('new-booking')} style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
             <Plus size={14} style={{ marginRight: 4 }} /> New Booking
           </button>

@@ -31,12 +31,12 @@ const routeConfig = {
   users: '/users',
 };
 
-function AdminShell({ page, onNav, currentUser, children }) {
+function AdminShell({ page, onNav, onAddClick, currentUser, children }) {
   return (
     <div className="app-shell" data-route={routeConfig[page] || routeConfig[DEFAULT_ROUTE]}>
       <Sidebar active={page} onNav={onNav} currentUser={currentUser} />
       <div className="main-content">
-        <Topbar page={page} onNav={onNav} />
+        <Topbar page={page} onNav={onNav} onAddClick={onAddClick} />
         {children}
       </div>
     </div>
@@ -47,6 +47,7 @@ export default function App() {
   const [bookings, setBookings] = useState(initialBookings);
   const [venues, setVenues] = useState(masterData.venues);
   const [users, setUsers] = useState(initialUsers);
+  const [userFormOpen, setUserFormOpen] = useState(false);
   const navigate = useNavigate();
 
   const currentUser = users.find((user) => user.role === 'Admin') || users[0];
@@ -93,6 +94,14 @@ export default function App() {
 
   const addUser = (user) => {
     setUsers((currentUsers) => [...currentUsers, user]);
+    setUserFormOpen(false);
+  };
+
+  const updateUser = (updatedUser) => {
+    setUsers((currentUsers) =>
+      currentUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
+    );
+    setUserFormOpen(false);
   };
 
   const toggleUserStatus = (id) => {
@@ -202,12 +211,20 @@ export default function App() {
       <Route
         path={routeConfig.users}
         element={
-          <AdminShell page="users" onNav={navigateTo} currentUser={currentUser}>
+          <AdminShell 
+            page="users" 
+            onNav={navigateTo} 
+            onAddClick={() => setUserFormOpen(true)} 
+            currentUser={currentUser}
+          >
             <UserManagement
               users={users}
               onAddUser={addUser}
+              onUpdateUser={updateUser}
               onToggleUserStatus={toggleUserStatus}
               onRemoveUser={removeUser}
+              isFormOpen={userFormOpen}
+              onCloseForm={() => setUserFormOpen(false)}
             />
           </AdminShell>
         }
