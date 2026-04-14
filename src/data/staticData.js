@@ -26,7 +26,7 @@ export const masterData = {
       coverImage: "https://images.unsplash.com/photo-1506146332389-18140dc7b2fb?q=80&w=2069&auto=format&fit=crop",
       halls: [
         { name: "Hall A", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall B", image: "https://images.unsplash.com/photo-1502633598306-cf81bb14386d?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall B", image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1000&auto=format&fit=crop" },
         { name: "Hall C", image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1000&auto=format&fit=crop" },
         { name: "Hall D", image: "https://images.unsplash.com/photo-1520242739010-44e95bde329e?q=80&w=1000&auto=format&fit=crop" },
         { name: "Hall E", image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1000&auto=format&fit=crop" }
@@ -39,9 +39,9 @@ export const masterData = {
       color: "#C96B9E",
       coverImage: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=2069&auto=format&fit=crop",
       halls: [
-        { name: "Expo 1", image: "https://images.unsplash.com/photo-1514525253344-9675669f9a4a?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 1", image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1000&auto=format&fit=crop" },
         { name: "Expo 2", image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Expo 3", image: "https://images.unsplash.com/photo-1516450360452-9312f5e36fc7?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 3", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop" },
         { name: "Expo 4", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" }
       ] 
     },
