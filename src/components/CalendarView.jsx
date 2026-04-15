@@ -7,7 +7,8 @@ import {
   MapPin,
   Clock,
   Info,
-  Edit3
+  Edit3,
+  AlertTriangle
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -34,8 +35,48 @@ function isSameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-function BookingModal({ date, bookings, venues, onClose, onEditBooking, onUpdateStatus }) {
+function BookingModal({ date, bookings, allBookings, venues, onClose, onEditBooking, onUpdateStatus }) {
+  const [conflictAlert, setConflictAlert] = useState(null);
+
   if (!date) return null;
+
+  const handleStatusChange = (bookingId, newStatus) => {
+    // Skip conflict check for terminal statuses
+    if (newStatus === 'Cancelled' || newStatus === 'Completed') {
+      onUpdateStatus(bookingId, newStatus);
+      return;
+    }
+
+    const booking = allBookings.find(b => b.id === bookingId);
+    if (!booking) return;
+
+    // Check for overlapping active bookings on the same venue+hall
+    const activeStatuses = ['Draft', 'Tentative', 'Confirmed'];
+    const conflicts = allBookings.filter(b => {
+      if (b.id === bookingId) return false;
+      if (!activeStatuses.includes(b.status)) return false;
+      if (b.venueId !== booking.venueId || b.hall !== booking.hall) return false;
+
+      const bStart = new Date(b.setupDate || b.eventStartDate).getTime();
+      const bEnd = new Date(b.dismantleDate || b.eventEndDate).getTime();
+      const fStart = new Date(booking.setupDate || booking.eventStartDate).getTime();
+      const fEnd = new Date(booking.dismantleDate || booking.eventEndDate).getTime();
+
+      return (fStart <= bEnd && fEnd >= bStart);
+    });
+
+    if (conflicts.length > 0) {
+      const conflictNames = conflicts.map(c => `${c.eventName} (${c.status})`).join(', ');
+      setConflictAlert({
+        bookingId,
+        newStatus,
+        message: `Cannot change status — this would create a duplicate booking. "${booking.eventName}" overlaps with: ${conflictNames} on the same hall (${booking.hall}). Please resolve the date overlap first.`,
+      });
+      return;
+    }
+
+    onUpdateStatus(bookingId, newStatus);
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -77,7 +118,7 @@ function BookingModal({ date, bookings, venues, onClose, onEditBooking, onUpdate
                         <select
                           className={`status-select ${b.status.toLowerCase()}`}
                           value={b.status}
-                          onChange={(e) => onUpdateStatus(b.id, e.target.value)}
+                          onChange={(e) => handleStatusChange(b.id, e.target.value)}
                           onClick={(e) => e.stopPropagation()}
                           style={{ fontSize: '0.65rem' }}
                         >
@@ -122,6 +163,38 @@ function BookingModal({ date, bookings, venues, onClose, onEditBooking, onUpdate
           </div>
         </div>
       </div>
+
+      {/* Conflict alert modal inside BookingModal */}
+      {conflictAlert && (
+        <div className="modal-overlay" onClick={() => setConflictAlert(null)} style={{ zIndex: 1000 }}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 460, width: '90%' }}>
+            <div className="modal-header">
+              <h3 style={{ fontSize: '1.1rem', color: '#F87171', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <AlertTriangle size={18} /> Duplicate Booking Conflict
+              </h3>
+            </div>
+            <div className="modal-body">
+              <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6 }}>
+                {conflictAlert.message}
+              </p>
+            </div>
+            <div className="modal-footer">
+              <button className="btn btn-ghost btn-sm" onClick={() => setConflictAlert(null)}>Dismiss</button>
+              <button
+                className="btn btn-sm"
+                style={{ background: 'rgba(200,160,60,0.15)', color: 'var(--gold)', border: '1px solid rgba(200,160,60,0.3)' }}
+                onClick={() => { 
+                  setConflictAlert(null); 
+                  onClose();
+                  onEditBooking(allBookings.find(b => b.id === conflictAlert.bookingId)); 
+                }}
+              >
+                <Edit3 size={13} /> Edit Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -225,6 +298,7 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
       <BookingModal 
         date={selected} 
         bookings={selected ? bookingsForDate(selected) : []} 
+        allBookings={bookings}
         venues={venues}
         onClose={() => setSelected(null)}
         onEditBooking={onEditBooking}

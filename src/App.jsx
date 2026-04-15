@@ -67,13 +67,39 @@ export default function App() {
     navigate(routeConfig[routeKey] || routeConfig[DEFAULT_ROUTE]);
   };
 
+  // ── Conflict detection utility ──────────────
+  const findConflicts = (targetBooking, currentBookings, excludeId = null) => {
+    const activeStatuses = ['Draft', 'Tentative', 'Confirmed'];
+    return currentBookings.filter(b => {
+      if (b.id === excludeId) return false;
+      if (!activeStatuses.includes(b.status)) return false;
+      if (b.venueId !== targetBooking.venueId || b.hall !== targetBooking.hall) return false;
+
+      const bStart = new Date(b.setupDate || b.eventStartDate).getTime();
+      const bEnd = new Date(b.dismantleDate || b.eventEndDate).getTime();
+      const fStart = new Date(targetBooking.setupDate || targetBooking.eventStartDate).getTime();
+      const fEnd = new Date(targetBooking.dismantleDate || targetBooking.eventEndDate).getTime();
+
+      return (fStart <= bEnd && fEnd >= bStart);
+    });
+  };
+
   // ── Booking CRUD ──────────────────────────────
   const addBooking = (newBooking) => {
+    // Server-side guard: prevent duplicate even if form validation was bypassed
+    const conflicts = findConflicts(newBooking, bookings);
+    if (conflicts.length > 0) {
+      return; // Form-level validation already shows the error
+    }
     setBookings((currentBookings) => [newBooking, ...currentBookings]);
     navigateTo('bookings');
   };
 
   const updateBooking = (updatedBooking) => {
+    const conflicts = findConflicts(updatedBooking, bookings, updatedBooking.id);
+    if (conflicts.length > 0) {
+      return; // Form-level validation already shows the error
+    }
     setBookings((currentBookings) =>
       currentBookings.map((booking) =>
         booking.id === updatedBooking.id ? { ...booking, ...updatedBooking } : booking,
@@ -84,6 +110,16 @@ export default function App() {
   };
 
   const updateBookingStatus = (id, status) => {
+    // Allow terminal statuses (Cancelled/Completed) without conflict check
+    if (status !== 'Cancelled' && status !== 'Completed') {
+      const booking = bookings.find(b => b.id === id);
+      if (booking) {
+        const conflicts = findConflicts(booking, bookings, id);
+        if (conflicts.length > 0) {
+          return; // BookingsList handles showing the conflict modal
+        }
+      }
+    }
     setBookings((currentBookings) =>
       currentBookings.map((booking) =>
         booking.id === id ? { ...booking, status } : booking,

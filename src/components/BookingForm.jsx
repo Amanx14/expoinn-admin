@@ -127,11 +127,12 @@ export default function BookingForm({
       newErrors.dismantleDate = 'Dismantle cannot be before event end';
     }
 
-    // Conflict detection
-    if (formData.status === 'Confirmed') {
-      const hasConflict = bookings.some(b => {
+    // Conflict detection — check against ALL active bookings (not just Confirmed)
+    if (formData.venueId && formData.hall && formData.eventStartDate && formData.eventEndDate) {
+      const activeStatuses = ['Draft', 'Tentative', 'Confirmed'];
+      const conflictingBookings = bookings.filter(b => {
         if (isEditMode && b.id === editBooking.id) return false;
-        if (b.status !== 'Confirmed') return false;
+        if (!activeStatuses.includes(b.status)) return false;
         if (b.venueId !== formData.venueId || b.hall !== formData.hall) return false;
         
         const bStart = new Date(b.setupDate || b.eventStartDate).getTime();
@@ -142,8 +143,14 @@ export default function BookingForm({
         return (fStart <= bEnd && fEnd >= bStart);
       });
 
-      if (hasConflict) {
-        newErrors.conflict = 'This hall is already confirmed for these dates. Please resolve the conflict or choose different dates.';
+      if (conflictingBookings.length > 0) {
+        const confirmedConflict = conflictingBookings.some(b => b.status === 'Confirmed');
+        const conflictNames = conflictingBookings.map(b => `${b.eventName} (${b.status})`).join(', ');
+        if (confirmedConflict) {
+          newErrors.conflict = `This hall has a confirmed booking that overlaps: ${conflictNames}. Choose different dates or hall.`;
+        } else {
+          newErrors.conflict = `Duplicate booking detected — this hall already has overlapping bookings: ${conflictNames}. Please choose different dates or hall to avoid double-booking.`;
+        }
       }
     }
 
