@@ -6,6 +6,7 @@ const pageTitles = {
   venues:        'Venue Catalog',
   bookings:     'All Bookings',
   'new-booking':'New Booking',
+  'edit-booking':'Edit Booking',
   reports:      'Reports & Analytics',
   ai:           'AI / LLM Module',
   master:       'Master Data',
@@ -24,7 +25,7 @@ export default function Topbar({ page, onNav, onAddClick }) {
           <button className="btn btn-primary btn-sm" onClick={onAddClick} style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
             <Plus size={14} style={{ marginRight: 4 }} /> Add User
           </button>
-        ) : page !== 'new-booking' && (
+        ) : (page !== 'new-booking' && page !== 'edit-booking') && (
           <button className="btn btn-primary btn-sm" onClick={() => onNav('new-booking')} style={{ padding: '6px 12px', fontSize: '0.75rem' }}>
             <Plus size={14} style={{ marginRight: 4 }} /> New Booking
           </button>

@@ -44,10 +44,11 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-export default function Dashboard({ bookings, venues, onNav, onUpdateStatus }) {
+export default function Dashboard({ bookings, venues, onNav, onUpdateStatus, currentUser }) {
   const totalRevenue = bookings.reduce((sum, booking) => sum + (booking.revenue || 0), 0);
   const confirmed = bookings.filter((booking) => booking.status.toLowerCase() === 'confirmed').length;
   const tentative = bookings.filter((booking) => booking.status.toLowerCase() === 'tentative').length;
+  const draft = bookings.filter((booking) => booking.status.toLowerCase() === 'draft').length;
   const monthlySeries = buildMonthlySeries(bookings);
   const recent = [...bookings]
     .sort((left, right) => (right.eventStartDate || '').localeCompare(left.eventStartDate || ''))
@@ -57,8 +58,8 @@ export default function Dashboard({ bookings, venues, onNav, onUpdateStatus }) {
     <div className="page">
       <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1>Welcome back, Avinash</h1>
-          <p>Enterprise Admin · Smart Booking Engine</p>
+          <h1>Welcome back, {currentUser?.name?.split(' ')[0] || 'Admin'}</h1>
+          <p>{currentUser?.role || 'Admin'} · Smart Booking Engine</p>
         </div>
         <button className="btn btn-primary" onClick={() => onNav('new-booking')}>
           <Plus size={18} style={{ marginRight: 8 }} /> Create New Booking
@@ -76,7 +77,7 @@ export default function Dashboard({ bookings, venues, onNav, onUpdateStatus }) {
           <div className="stat-icon"><CalendarCheck size={17} /></div>
           <div className="stat-label">Active Bookings</div>
           <div className="stat-value">{bookings.length}</div>
-          <div className="stat-sub">{confirmed} confirmed, {tentative} tentative</div>
+          <div className="stat-sub">{confirmed} confirmed, {tentative} tentative, {draft} draft</div>
         </div>
         <div className="stat-card">
           <div className="stat-icon"><Building2 size={17} /></div>

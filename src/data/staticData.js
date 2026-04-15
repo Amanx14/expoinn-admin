@@ -58,7 +58,7 @@ export const masterData = {
     "Software", "Hardware", "Electric Vehicles", "Medical Devices",
     "EdTech", "Textiles", "Commercial", "Consumer Electronics", "Aerospace"
   ],
-  eventStatus: ["Tentative", "Confirmed", "Cancelled", "Completed"],
+  eventStatuses: ["Draft", "Tentative", "Confirmed", "Completed", "Cancelled"],
   eventTypes: ["Corporate Event", "Exhibition", "Wedding", "Entertainment", "Conference"],
   primePeriods: [
     { label: "Jan-Mar (HD)", type: "HD" },
@@ -72,73 +72,99 @@ export const masterData = {
 export const initialBookings = [
   {
     id: "b1", organizer: "AI Summit Secretariat", venueId: "v1", hall: "Hall 1",
-    eventName: "AI Summit 2026", // Added name field
+    eventName: "AI Summit 2026",
     industry: "Technology & IT", sectors: ["Software"], eventType: "Corporate Event",
-    status: "confirmed", setupDate: "2026-04-10", eventStartDate: "2026-04-12",
+    status: "Confirmed", availability: "Booked",
+    setupDate: "2026-04-10", eventStartDate: "2026-04-12",
     eventEndDate: "2026-04-14", dismantleDate: "2026-04-15", guests: 5000, revenue: 1200000,
   },
   {
     id: "b2", organizer: "Startup India", venueId: "v2", hall: "Hall A",
     eventName: "Startup India Expo",
     industry: "Technology & IT", sectors: ["Software", "Hardware"], eventType: "Exhibition",
-    status: "tentative", setupDate: "2026-04-18", eventStartDate: "2026-04-20",
+    status: "Tentative", availability: "Required",
+    setupDate: "2026-04-18", eventStartDate: "2026-04-20",
     eventEndDate: "2026-04-22", dismantleDate: "2026-04-23", guests: 12000, revenue: 2500000,
   },
   {
     id: "b3", organizer: "CII Events", venueId: "v1", hall: "Hall 3",
     eventName: "EV Expo 2026",
     industry: "Automotive", sectors: ["Electric Vehicles"], eventType: "Exhibition",
-    status: "confirmed", setupDate: "2026-04-25", eventStartDate: "2026-04-27",
+    status: "Confirmed", availability: "Booked",
+    setupDate: "2026-04-25", eventStartDate: "2026-04-27",
     eventEndDate: "2026-04-30", dismantleDate: "2026-05-01", guests: 20000, revenue: 4500000,
   },
   {
     id: "b4", organizer: "Fashion Design Council", venueId: "v3", hall: "Expo 1",
     eventName: "Fashion Week 2026",
     industry: "Fashion & Apparel", sectors: ["Textiles"], eventType: "Exhibition",
-    status: "confirmed", setupDate: "2026-03-05", eventStartDate: "2026-03-08",
+    status: "Completed", availability: "Booked",
+    setupDate: "2026-03-05", eventStartDate: "2026-03-08",
     eventEndDate: "2026-03-12", dismantleDate: "2026-03-13", guests: 8000, revenue: 1800000,
   },
   {
     id: "b5", organizer: "Pharma India", venueId: "v2", hall: "Hall B",
     eventName: "Pharma Summit",
     industry: "Medical & Pharma", sectors: ["Medical Devices"], eventType: "Conference",
-    status: "completed", setupDate: "2026-02-10", eventStartDate: "2026-02-12",
+    status: "Completed", availability: "Booked",
+    setupDate: "2026-02-10", eventStartDate: "2026-02-12",
     eventEndDate: "2026-02-14", dismantleDate: "2026-02-15", guests: 3000, revenue: 900000,
   },
   {
     id: "b6", organizer: "NASSCOM", venueId: "v1", hall: "Hall 2",
     eventName: "NASSCOM Tech Days",
     industry: "Technology & IT", sectors: ["Software", "Hardware"], eventType: "Conference",
-    status: "confirmed", setupDate: "2026-05-10", eventStartDate: "2026-05-12",
+    status: "Confirmed", availability: "Booked",
+    setupDate: "2026-05-10", eventStartDate: "2026-05-12",
     eventEndDate: "2026-05-15", dismantleDate: "2026-05-16", guests: 7000, revenue: 2100000,
   },
   {
     id: "b7", organizer: "FICCI", venueId: "v2", hall: "Hall C",
     eventName: "Consumer Tech Expo",
     industry: "FMCG", sectors: ["Consumer Electronics"], eventType: "Exhibition",
-    status: "tentative", setupDate: "2026-05-20", eventStartDate: "2026-05-22",
+    status: "Tentative", availability: "Required",
+    setupDate: "2026-05-20", eventStartDate: "2026-05-22",
     eventEndDate: "2026-05-25", dismantleDate: "2026-05-26", guests: 15000, revenue: 3200000,
   },
   {
     id: "b8", organizer: "Auto Expo Group", venueId: "v1", hall: "Hall 4",
     eventName: "Auto Expo 2026",
     industry: "Automotive", sectors: ["Electric Vehicles"], eventType: "Exhibition",
-    status: "confirmed", setupDate: "2026-06-01", eventStartDate: "2026-06-04",
+    status: "Confirmed", availability: "Booked",
+    setupDate: "2026-06-01", eventStartDate: "2026-06-04",
     eventEndDate: "2026-06-08", dismantleDate: "2026-06-09", guests: 30000, revenue: 8000000,
   },
   {
     id: "b9", organizer: "AgriTech Forum", venueId: "v3", hall: "Expo 2",
     eventName: "AgriTech Summit",
     industry: "Agriculture", sectors: ["Commercial"], eventType: "Conference",
-    status: "tentative", setupDate: "2026-04-05", eventStartDate: "2026-04-07",
+    status: "Tentative", availability: "Required",
+    setupDate: "2026-04-05", eventStartDate: "2026-04-07",
     eventEndDate: "2026-04-09", dismantleDate: "2026-04-10", guests: 2000, revenue: 500000,
   },
   {
     id: "b10", organizer: "EdTech Alliance", venueId: "v2", hall: "Hall D",
     eventName: "EdTech Conf 2026",
     industry: "Education", sectors: ["EdTech"], eventType: "Conference",
-    status: "confirmed", setupDate: "2026-04-02", eventStartDate: "2026-04-03",
+    status: "Confirmed", availability: "Booked",
+    setupDate: "2026-04-02", eventStartDate: "2026-04-03",
     eventEndDate: "2026-04-04", dismantleDate: "2026-04-05", guests: 1500, revenue: 400000,
+  },
+  {
+    id: "b11", organizer: "CII Events", venueId: "v2", hall: "Hall A",
+    eventName: "Defense & Aerospace Show",
+    industry: "Defense", sectors: ["Aerospace"], eventType: "Exhibition",
+    status: "Draft", availability: "Required",
+    setupDate: "2026-07-10", eventStartDate: "2026-07-14",
+    eventEndDate: "2026-07-18", dismantleDate: "2026-07-19", guests: 25000, revenue: 6000000,
+  },
+  {
+    id: "b12", organizer: "FICCI", venueId: "v3", hall: "Expo 3",
+    eventName: "Real Estate Conclave",
+    industry: "Real Estate", sectors: ["Commercial"], eventType: "Conference",
+    status: "Draft", availability: "Required",
+    setupDate: "2026-08-01", eventStartDate: "2026-08-03",
+    eventEndDate: "2026-08-05", dismantleDate: "2026-08-06", guests: 4000, revenue: 1500000,
   },
 ];
 
@@ -159,6 +185,8 @@ export const revenueByIndustry = [
   { industry: "FMCG", revenue: 3200000, bookings: 1 },
   { industry: "Agriculture", revenue: 500000, bookings: 1 },
   { industry: "Education", revenue: 400000, bookings: 1 },
+  { industry: "Defense", revenue: 6000000, bookings: 1 },
+  { industry: "Real Estate", revenue: 1500000, bookings: 1 },
 ];
 
 // Activity feed
@@ -171,13 +199,20 @@ export const recentActivity = [
   { time: "1 day ago", action: "Payment Received", detail: "₹12,00,000 — AI Summit Secretariat", type: "success" },
 ];
 
-// AI mock responses
+// AI mock responses — expanded for chat coverage
 export const aiResponses = {
   "show high demand months": "Based on booking data, **October** (92% occupancy) and **March** (87% occupancy) are peak demand months at Bharat Mandapam. Technology & Automotive industries drive 65% of bookings during these periods. Consider premium pricing for Oct-Dec quarter.",
   "top revenue industries": "**Automotive** leads with ₹1.25 Cr across 2 bookings, followed by **Technology & IT** at ₹58L across 4 bookings. The average revenue per Automotive event (₹62.5L) is 3x higher than Technology events (₹14.5L).",
   "upcoming conflicting events": "No active conflicts detected. However, **Startup India** (Apr 18-23, Tentative) and a potential new booking for Hall A could overlap. Recommend confirming or releasing the tentative hold by Apr 15.",
   "demand forecast": "Based on historical patterns, **Q4 2026** will see 35% higher demand than Q2. Bharat Mandapam Hall 1 and Hall 4 are likely to be fully booked. Recommend opening advance bookings for Oct-Dec now.",
-  "revenue summary": "**YTD Revenue: ₹2.52 Cr** across 10 bookings. Confirmed bookings account for 78% of revenue. Average booking value: ₹25.2L. Projected annual revenue at current pace: ₹5.04 Cr.",
+  "revenue summary": "**YTD Revenue: ₹3.26 Cr** across 12 bookings. Confirmed bookings account for 72% of revenue. Average booking value: ₹27.2L. Projected annual revenue at current pace: ₹6.52 Cr.",
+  "highest revenue sectors": "**Automotive (Electric Vehicles)** dominates at ₹1.25 Cr, driven by Auto Expo 2026 (₹80L alone). **Software** follows at ₹38L across 3 bookings. Recommend nurturing EV industry relationships for repeat business.",
+  "risk of cancellation": "**3 bookings** are flagged as at-risk: Startup India Expo (Tentative, 5 days to event), Consumer Tech Expo (Tentative, high-value ₹32L), and AgriTech Summit (Tentative, low engagement). Recommend immediate follow-up calls.",
+  "q4 demand forecast": "**Q4 2026** is projected to see **40% higher demand** vs Q2, driven by festive season and year-end corporate events. Bharat Mandapam and Pragati Maidan will be near full capacity. Halls 1, 4 (BM) and A, B (PM) need advance reservation blocks.",
+  "hall utilization": "**Bharat Mandapam** leads at 69% avg occupancy across 5 halls. **Hall 1** is the most utilized (87% in peak months). **Expo Mart** has the lowest utilization at 54%. Consider promotional pricing for Expo Mart to boost occupancy.",
+  "organizer performance": "**CII Events** is the top organizer by volume (2 events, ₹1.05 Cr revenue). **Auto Expo Group** leads by per-event revenue (₹80L). 4 organizers have only 1 booking each — potential for growth through relationship management.",
+  "billing status": "**Confirmed pipeline**: ₹1.82 Cr across 5 bookings. **Tentative pipeline**: ₹62L across 3 bookings (at-risk). **Draft pipeline**: ₹75L across 2 bookings (early stage). Total outstanding: ₹3.19 Cr across all active bookings.",
+  "peak booking periods": "**March** and **October** are historically peak months. HD periods (Jan-Mar, Jul-Sep, Oct-Dec) account for 78% of all bookings. LD period (Apr-Jun) sees 22% fewer bookings but higher corporate event concentration.",
 };
 
 // Users (kept from previous setup)

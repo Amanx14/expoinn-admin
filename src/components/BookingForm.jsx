@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
   Calendar, 
   MapPin, 
@@ -7,7 +7,8 @@ import {
   Tag, 
   AlertTriangle, 
   CheckCircle2, 
-  Plus
+  Plus,
+  Save
 } from 'lucide-react';
 
 export default function BookingForm({ 
@@ -15,27 +16,61 @@ export default function BookingForm({
   venues, 
   organizers, 
   industries, 
-  sectors, 
-  onSave 
+  sectors,
+  eventTypes = ['Corporate Event', 'Exhibition', 'Wedding', 'Entertainment', 'Conference'],
+  eventStatuses = ['Draft', 'Tentative', 'Confirmed'],
+  onSave,
+  editBooking = null,
 }) {
-  const [formData, setFormData] = useState({
-    eventName: '',
-    venueId: venues[0]?.id || '',
-    hall: '',
-    organizer: organizers[0] || '',
-    industry: industries[0] || '',
-    sectors: [],
-    eventType: 'Corporate Event',
-    setupDate: '',
-    eventStartDate: '',
-    eventEndDate: '',
-    dismantleDate: '',
-    status: 'Tentative',
-    revenue: 0,
-    guests: 0,
-  });
+  const isEditMode = !!editBooking;
 
+  const getInitialFormData = () => {
+    if (editBooking) {
+      return {
+        eventName: editBooking.eventName || '',
+        venueId: editBooking.venueId || venues[0]?.id || '',
+        hall: editBooking.hall || '',
+        organizer: editBooking.organizer || organizers[0] || '',
+        industry: editBooking.industry || industries[0] || '',
+        sectors: editBooking.sectors || [],
+        eventType: editBooking.eventType || eventTypes[0] || 'Corporate Event',
+        setupDate: editBooking.setupDate || '',
+        eventStartDate: editBooking.eventStartDate || '',
+        eventEndDate: editBooking.eventEndDate || '',
+        dismantleDate: editBooking.dismantleDate || '',
+        status: editBooking.status || 'Tentative',
+        availability: editBooking.availability || 'Required',
+        revenue: editBooking.revenue || 0,
+        guests: editBooking.guests || 0,
+      };
+    }
+    return {
+      eventName: '',
+      venueId: venues[0]?.id || '',
+      hall: '',
+      organizer: organizers[0] || '',
+      industry: industries[0] || '',
+      sectors: [],
+      eventType: eventTypes[0] || 'Corporate Event',
+      setupDate: '',
+      eventStartDate: '',
+      eventEndDate: '',
+      dismantleDate: '',
+      status: 'Tentative',
+      availability: 'Required',
+      revenue: 0,
+      guests: 0,
+    };
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData);
   const [errors, setErrors] = useState({});
+
+  // Reset form when editBooking changes
+  useEffect(() => {
+    setFormData(getInitialFormData());
+    setErrors({});
+  }, [editBooking]);
 
   // Filter halls based on selected venue
   const availableHalls = useMemo(() => {
@@ -95,6 +130,7 @@ export default function BookingForm({
     // Conflict detection
     if (formData.status === 'Confirmed') {
       const hasConflict = bookings.some(b => {
+        if (isEditMode && b.id === editBooking.id) return false;
         if (b.status !== 'Confirmed') return false;
         if (b.venueId !== formData.venueId || b.hall !== formData.hall) return false;
         
@@ -118,21 +154,30 @@ export default function BookingForm({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (validate()) {
-      const newId = `b${bookings.length + 101}`;
-      onSave({ 
-        ...formData, 
-        id: newId, 
-        revenue: Number(formData.revenue) || 0,
-        guests: Number(formData.guests) || 0
-      });
+      if (isEditMode) {
+        onSave({ 
+          ...editBooking,
+          ...formData, 
+          revenue: Number(formData.revenue) || 0,
+          guests: Number(formData.guests) || 0
+        });
+      } else {
+        const newId = `b${bookings.length + 101}`;
+        onSave({ 
+          ...formData, 
+          id: newId, 
+          revenue: Number(formData.revenue) || 0,
+          guests: Number(formData.guests) || 0
+        });
+      }
     }
   };
 
   return (
     <div className="page" style={{ maxWidth: 880, margin: '0 auto' }}>
       <div className="page-header">
-        <h1>New Booking Block</h1>
-        <p>Reserve space using the synchronized frontend data model.</p>
+        <h1>{isEditMode ? `Edit Booking — ${editBooking.id}` : 'New Booking Block'}</h1>
+        <p>{isEditMode ? 'Update booking details and save changes.' : 'Reserve space using the synchronized frontend data model.'}</p>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -149,6 +194,7 @@ export default function BookingForm({
                   value={formData.eventName}
                   onChange={handleChange}
                 />
+                {errors.eventName && <span style={{ fontSize: '0.72rem', color: '#F87171' }}>{errors.eventName}</span>}
               </div>
 
               <div className="form-grid" style={{ marginBottom: 18 }}>
@@ -161,11 +207,7 @@ export default function BookingForm({
                 <div className="form-group">
                   <label className="form-label">Event Type</label>
                   <select className="form-select" name="eventType" value={formData.eventType} onChange={handleChange}>
-                    <option value="Corporate Event">Corporate Event</option>
-                    <option value="Exhibition">Exhibition</option>
-                    <option value="Wedding">Wedding</option>
-                    <option value="Conference">Conference</option>
-                    <option value="Entertainment">Entertainment</option>
+                    {eventTypes.map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
               </div>
@@ -217,6 +259,7 @@ export default function BookingForm({
                 <div className="range-label">Setup</div>
                 <input type="date" className="form-input" name="setupDate" value={formData.setupDate} onChange={handleChange} />
               </div>
+              {errors.setupDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.setupDate}</div>}
               <div className="date-range-row">
                 <div className="range-label" style={{ color: 'var(--gold)' }}>Event Live</div>
                 <div className="range-inputs">
@@ -225,22 +268,30 @@ export default function BookingForm({
                   <input type="date" className="form-input" name="eventEndDate" value={formData.eventEndDate} onChange={handleChange} />
                 </div>
               </div>
+              {errors.eventStartDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.eventStartDate}</div>}
+              {errors.eventEndDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.eventEndDate}</div>}
               <div className="date-range-row">
                 <div className="range-label">Dismantle</div>
                 <input type="date" className="form-input" name="dismantleDate" value={formData.dismantleDate} onChange={handleChange} />
               </div>
+              {errors.dismantleDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.dismantleDate}</div>}
             </div>
           </div>
 
           <div style={{ position: 'sticky', top: 80 }}>
             <div className="card" style={{ marginBottom: 20 }}>
-              <div className="section-title">Commercials</div>
+              <div className="section-title">Commercials & Status</div>
               <div className="form-group" style={{ marginBottom: 16 }}>
-                <label className="form-label">Initial Status</label>
+                <label className="form-label">Booking Status</label>
                 <select className="form-select" name="status" value={formData.status} onChange={handleChange}>
-                  <option value="Tentative">Tentative</option>
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="Draft">Draft</option>
+                  {eventStatuses.map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="form-group" style={{ marginBottom: 16 }}>
+                <label className="form-label">Availability</label>
+                <select className="form-select" name="availability" value={formData.availability} onChange={handleChange}>
+                  <option value="Booked">Booked</option>
+                  <option value="Required">Required</option>
                 </select>
               </div>
               <div className="form-group" style={{ marginBottom: 16 }}>
@@ -260,14 +311,17 @@ export default function BookingForm({
               )}
 
               <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }}>
-                <Plus size={16} /> Create Booking
+                {isEditMode ? <><Save size={16} /> Update Booking</> : <><Plus size={16} /> Create Booking</>}
               </button>
             </div>
 
             <div className="card" style={{ background: 'rgba(255,255,255,0.02)' }}>
                <CheckCircle2 size={16} style={{ color: 'var(--gold)', marginBottom: 10 }} />
                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                 Validation and conflict checking will be applied against the master booking registry.
+                 {isEditMode 
+                   ? 'Changes will be validated against existing bookings for conflict detection.'
+                   : 'Validation and conflict checking will be applied against the master booking registry.'
+                 }
                </div>
             </div>
           </div>

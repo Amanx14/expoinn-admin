@@ -6,7 +6,8 @@ import {
   X,
   MapPin,
   Clock,
-  Info
+  Info,
+  Edit3
 } from 'lucide-react';
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -33,12 +34,12 @@ function isSameDay(a, b) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-function BookingModal({ date, bookings, venues, onClose }) {
+function BookingModal({ date, bookings, venues, onClose, onEditBooking, onUpdateStatus }) {
   if (!date) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 500, width: '90%' }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 520, width: '90%' }}>
         <div className="modal-header">
           <div>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -72,16 +73,40 @@ function BookingModal({ date, bookings, venues, onClose }) {
                   <div key={b.id} className="card" style={{ borderLeft: `4px solid ${typeColor}`, background: 'var(--bg-overlay)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
                       <span style={{ fontSize: '0.7rem', fontWeight: 600, color: typeColor, textTransform: 'uppercase' }}>{typeLabel}</span>
-                      <span className={`status-pill ${b.status.toLowerCase()}`} style={{ fontSize: '0.65rem' }}>{b.status}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <select
+                          className={`status-select ${b.status.toLowerCase()}`}
+                          value={b.status}
+                          onChange={(e) => onUpdateStatus(b.id, e.target.value)}
+                          onClick={(e) => e.stopPropagation()}
+                          style={{ fontSize: '0.65rem' }}
+                        >
+                          {['Draft', 'Tentative', 'Confirmed', 'Completed', 'Cancelled'].map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                     <h3 style={{ fontSize: '1rem', margin: '0 0 8px 0', color: 'var(--text-primary)' }}>{b.eventName || b.organizer}</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         <MapPin size={12} /> {b.hall} · {venue?.name}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
                         <Clock size={12} /> {b.eventStartDate} to {b.eventEndDate}
                       </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        {b.organizer} · {b.industry}
+                      </div>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => { onEditBooking(b); onClose(); }}
+                        style={{ padding: '4px 10px', fontSize: '0.72rem' }}
+                      >
+                        <Edit3 size={12} /> Edit
+                      </button>
                     </div>
                   </div>
                 );
@@ -101,7 +126,7 @@ function BookingModal({ date, bookings, venues, onClose }) {
   );
 }
 
-export default function CalendarView({ bookings, venues }) {
+export default function CalendarView({ bookings, venues, onEditBooking, onUpdateStatus }) {
   const now = new Date();
   const [year, setYear]   = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -137,6 +162,9 @@ export default function CalendarView({ bookings, venues }) {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6B9EC9' }} /> Tentative
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#94A3B8' }} /> Draft
               </div>
            </div>
         </div>
@@ -198,7 +226,9 @@ export default function CalendarView({ bookings, venues }) {
         date={selected} 
         bookings={selected ? bookingsForDate(selected) : []} 
         venues={venues}
-        onClose={() => setSelected(null)} 
+        onClose={() => setSelected(null)}
+        onEditBooking={onEditBooking}
+        onUpdateStatus={onUpdateStatus}
       />
     </div>
   );

@@ -25,6 +25,7 @@ const routeConfig = {
   venues: '/venues',
   bookings: '/bookings',
   'new-booking': '/bookings/new',
+  'edit-booking': '/bookings/edit',
   reports: '/reports',
   ai: '/ai-insights',
   master: '/master-data',
@@ -48,6 +49,16 @@ export default function App() {
   const [venues, setVenues] = useState(masterData.venues);
   const [users, setUsers] = useState(initialUsers);
   const [userFormOpen, setUserFormOpen] = useState(false);
+  const [editingBooking, setEditingBooking] = useState(null);
+
+  // Master data state (lifted for CRUD)
+  const [industries, setIndustries] = useState(masterData.industries);
+  const [sectors, setSectors] = useState(masterData.sectors);
+  const [organizers, setOrganizers] = useState(masterData.organizers);
+  const [eventStatuses, setEventStatuses] = useState(masterData.eventStatuses);
+  const [eventTypes, setEventTypes] = useState(masterData.eventTypes);
+  const [primePeriods, setPrimePeriods] = useState(masterData.primePeriods);
+
   const navigate = useNavigate();
 
   const currentUser = users.find((user) => user.role === 'Admin') || users[0];
@@ -56,8 +67,19 @@ export default function App() {
     navigate(routeConfig[routeKey] || routeConfig[DEFAULT_ROUTE]);
   };
 
+  // ── Booking CRUD ──────────────────────────────
   const addBooking = (newBooking) => {
     setBookings((currentBookings) => [newBooking, ...currentBookings]);
+    navigateTo('bookings');
+  };
+
+  const updateBooking = (updatedBooking) => {
+    setBookings((currentBookings) =>
+      currentBookings.map((booking) =>
+        booking.id === updatedBooking.id ? { ...booking, ...updatedBooking } : booking,
+      ),
+    );
+    setEditingBooking(null);
     navigateTo('bookings');
   };
 
@@ -69,6 +91,18 @@ export default function App() {
     );
   };
 
+  const deleteBooking = (id) => {
+    setBookings((currentBookings) =>
+      currentBookings.filter((booking) => booking.id !== id),
+    );
+  };
+
+  const startEditBooking = (booking) => {
+    setEditingBooking(booking);
+    navigateTo('edit-booking');
+  };
+
+  // ── Venue CRUD ────────────────────────────────
   const addVenue = (venue) => {
     setVenues((currentVenues) => [...currentVenues, venue]);
   };
@@ -92,6 +126,7 @@ export default function App() {
     );
   };
 
+  // ── User CRUD ─────────────────────────────────
   const addUser = (user) => {
     setUsers((currentUsers) => [...currentUsers, user]);
     setUserFormOpen(false);
@@ -118,6 +153,40 @@ export default function App() {
     setUsers((currentUsers) => currentUsers.filter((user) => user.id !== id));
   };
 
+  // ── Master Data CRUD Handlers ─────────────────
+  const masterCrudHandlers = {
+    industries: {
+      add: (item) => setIndustries((prev) => [...prev, item]),
+      remove: (item) => setIndustries((prev) => prev.filter((i) => i !== item)),
+      update: (oldVal, newVal) => setIndustries((prev) => prev.map((i) => i === oldVal ? newVal : i)),
+    },
+    sectors: {
+      add: (item) => setSectors((prev) => [...prev, item]),
+      remove: (item) => setSectors((prev) => prev.filter((s) => s !== item)),
+      update: (oldVal, newVal) => setSectors((prev) => prev.map((s) => s === oldVal ? newVal : s)),
+    },
+    organizers: {
+      add: (item) => setOrganizers((prev) => [...prev, item]),
+      remove: (item) => setOrganizers((prev) => prev.filter((o) => o !== item)),
+      update: (oldVal, newVal) => setOrganizers((prev) => prev.map((o) => o === oldVal ? newVal : o)),
+    },
+    eventStatuses: {
+      add: (item) => setEventStatuses((prev) => [...prev, item]),
+      remove: (item) => setEventStatuses((prev) => prev.filter((s) => s !== item)),
+      update: (oldVal, newVal) => setEventStatuses((prev) => prev.map((s) => s === oldVal ? newVal : s)),
+    },
+    eventTypes: {
+      add: (item) => setEventTypes((prev) => [...prev, item]),
+      remove: (item) => setEventTypes((prev) => prev.filter((t) => t !== item)),
+      update: (oldVal, newVal) => setEventTypes((prev) => prev.map((t) => t === oldVal ? newVal : t)),
+    },
+    primePeriods: {
+      add: (item) => setPrimePeriods((prev) => [...prev, item]),
+      remove: (item) => setPrimePeriods((prev) => prev.filter((p) => p.label !== item.label)),
+      update: (oldVal, newVal) => setPrimePeriods((prev) => prev.map((p) => p.label === oldVal.label ? newVal : p)),
+    },
+  };
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to={routeConfig[DEFAULT_ROUTE]} replace />} />
@@ -130,6 +199,7 @@ export default function App() {
               venues={venues}
               onNav={navigateTo}
               onUpdateStatus={updateBookingStatus}
+              currentUser={currentUser}
             />
           </AdminShell>
         }
@@ -146,7 +216,12 @@ export default function App() {
         path={routeConfig.calendar}
         element={
           <AdminShell page="calendar" onNav={navigateTo} currentUser={currentUser}>
-            <CalendarView bookings={bookings} venues={venues} />
+            <CalendarView
+              bookings={bookings}
+              venues={venues}
+              onEditBooking={startEditBooking}
+              onUpdateStatus={updateBookingStatus}
+            />
           </AdminShell>
         }
       />
@@ -157,8 +232,11 @@ export default function App() {
             <BookingsList
               bookings={bookings}
               venues={venues}
+              industries={industries}
               onNav={navigateTo}
               onUpdateStatus={updateBookingStatus}
+              onEditBooking={startEditBooking}
+              onDeleteBooking={deleteBooking}
             />
           </AdminShell>
         }
@@ -170,10 +248,30 @@ export default function App() {
             <BookingForm
               bookings={bookings}
               venues={venues}
-              organizers={masterData.organizers}
-              industries={masterData.industries}
-              sectors={masterData.sectors}
+              organizers={organizers}
+              industries={industries}
+              sectors={sectors}
+              eventTypes={eventTypes}
+              eventStatuses={eventStatuses}
               onSave={addBooking}
+            />
+          </AdminShell>
+        }
+      />
+      <Route
+        path={routeConfig['edit-booking']}
+        element={
+          <AdminShell page="edit-booking" onNav={navigateTo} currentUser={currentUser}>
+            <BookingForm
+              bookings={bookings}
+              venues={venues}
+              organizers={organizers}
+              industries={industries}
+              sectors={sectors}
+              eventTypes={eventTypes}
+              eventStatuses={eventStatuses}
+              onSave={updateBooking}
+              editBooking={editingBooking}
             />
           </AdminShell>
         }
@@ -200,9 +298,15 @@ export default function App() {
           <AdminShell page="master" onNav={navigateTo} currentUser={currentUser}>
             <MasterData
               venues={venues}
-              organizers={masterData.organizers}
+              organizers={organizers}
+              industries={industries}
+              sectors={sectors}
+              eventStatuses={eventStatuses}
+              eventTypes={eventTypes}
+              primePeriods={primePeriods}
               onAddVenue={addVenue}
               onAddHall={addHall}
+              masterCrudHandlers={masterCrudHandlers}
               currentUser={currentUser}
             />
           </AdminShell>
