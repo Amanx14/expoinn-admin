@@ -11,11 +11,16 @@ export const masterData = {
       color: "#C9A84C",
       coverImage: "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=2069&auto=format&fit=crop",
       halls: [
-        { name: "Hall 1", image: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall 2", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall 3", image: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall 4", image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall 5", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" }
+        { name: "Hall 1",  areaSqm: 6950, image: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 2",  areaSqm: 6910, image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 3",  areaSqm: 5100, image: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 4",  areaSqm: 5020, image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 5",  areaSqm: 4830, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 6",  areaSqm: 4870, image: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 7",  areaSqm: 3800, image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 8",  areaSqm: 3650, image: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 9",  areaSqm: 2900, image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 10", areaSqm: 2750, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" }
       ] 
     },
     { 
@@ -25,11 +30,18 @@ export const masterData = {
       color: "#6B9EC9",
       coverImage: "https://images.unsplash.com/photo-1506146332389-18140dc7b2fb?q=80&w=2069&auto=format&fit=crop",
       halls: [
-        { name: "Hall A", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall B", image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall C", image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall D", image: "https://images.unsplash.com/photo-1520242739010-44e95bde329e?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall E", image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1000&auto=format&fit=crop" }
+        { name: "Hall 1",   areaSqm: 5400, image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 2",   areaSqm: 5400, image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 3",   areaSqm: 5400, image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 4",   areaSqm: 5400, image: "https://images.unsplash.com/photo-1520242739010-44e95bde329e?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 5",   areaSqm: 5400, image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 6",   areaSqm: 4200, image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 7",   areaSqm: 4200, image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 8",   areaSqm: 4200, image: "https://images.unsplash.com/photo-1475721027785-f74eccf877e2?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 9",   areaSqm: 3800, image: "https://images.unsplash.com/photo-1520242739010-44e95bde329e?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 10",  areaSqm: 3800, image: "https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 11",  areaSqm: 3200, image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 12",  areaSqm: 3200, image: "https://images.unsplash.com/photo-1519741497674-611481863552?q=80&w=1000&auto=format&fit=crop" }
       ] 
     },
     { 
@@ -39,10 +51,21 @@ export const masterData = {
       color: "#C96B9E",
       coverImage: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=2069&auto=format&fit=crop",
       halls: [
-        { name: "Expo 1", image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Expo 2", image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Expo 3", image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Expo 4", image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" }
+        { name: "Expo 1",  areaSqm: 6000, image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 2",  areaSqm: 6000, image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 3",  areaSqm: 6000, image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 4",  areaSqm: 6000, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 5",  areaSqm: 4500, image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 6",  areaSqm: 4500, image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 7",  areaSqm: 4500, image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 8",  areaSqm: 3800, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 9",  areaSqm: 3800, image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 10", areaSqm: 3800, image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 11", areaSqm: 2800, image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 12", areaSqm: 2800, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 13", areaSqm: 2800, image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 14", areaSqm: 2200, image: "https://images.unsplash.com/photo-1429962714451-bb934ecdc4ec?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Expo 15", areaSqm: 2200, image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?q=80&w=1000&auto=format&fit=crop" }
       ] 
     },
   ],

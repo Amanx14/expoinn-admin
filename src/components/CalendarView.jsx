@@ -1,309 +1,547 @@
-import { useState } from 'react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  Calendar as CalendarIcon, 
-  X,
-  MapPin,
-  Clock,
-  Info,
-  Edit3,
-  AlertTriangle
-} from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { X, Maximize, Minimize } from 'lucide-react';
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// ── helpers ──────────────────────────────────────────────────────────────────
 
-function getCalendarDays(year, month) {
-  const first = new Date(year, month, 1);
-  const last  = new Date(year, month + 1, 0);
-  const days = [];
-  for (let i = 0; i < first.getDay(); i++) {
-    const d = new Date(year, month, -i);
-    days.unshift({ date: d, current: false });
-  }
-  for (let d = 1; d <= last.getDate(); d++) {
-    days.push({ date: new Date(year, month, d), current: true });
-  }
-  const remaining = 42 - days.length;
-  for (let d = 1; d <= remaining; d++) {
-    days.push({ date: new Date(year, month + 1, d), current: false });
-  }
-  return days;
+function toMidnight(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-function isSameDay(a, b) {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+function fmtDate(dateStr) {
+  if (!dateStr) return '—';
+  return toMidnight(dateStr).toLocaleDateString('en-IN', {
+    day: '2-digit', month: 'short', year: 'numeric',
+  });
 }
 
-function BookingModal({ date, bookings, allBookings, venues, onClose, onEditBooking, onUpdateStatus }) {
-  const [conflictAlert, setConflictAlert] = useState(null);
+function getCellType(date, booking) {
+  const d = date.getTime();
+  const sDate = toMidnight(booking.setupDate);
+  const eDate = toMidnight(booking.eventStartDate);
+  const evEnd = toMidnight(booking.eventEndDate);
+  const disE = toMidnight(booking.dismantleDate);
 
-  if (!date) return null;
+  if (sDate && eDate && d >= sDate.getTime() && d < eDate.getTime()) return 'mounting';
+  if (eDate && evEnd && d >= eDate.getTime() && d <= evEnd.getTime()) return 'exhibition';
+  if (disE && evEnd && d > evEnd.getTime() && d <= disE.getTime()) return 'dismantling';
+  return 'exhibition'; // fallback
+}
 
-  const handleStatusChange = (bookingId, newStatus) => {
-    // Skip conflict check for terminal statuses
-    if (newStatus === 'Cancelled' || newStatus === 'Completed') {
-      onUpdateStatus(bookingId, newStatus);
-      return;
-    }
+// status → cell colour class
+function getStatusClass(booking, date) {
+  const status = (booking.status || '').toLowerCase();
+  if (status === 'cancelled' || status === 'completed') return 'cell-na';
 
-    const booking = allBookings.find(b => b.id === bookingId);
-    if (!booking) return;
+  const type = getCellType(date, booking);
+  if (type === 'mounting' || type === 'dismantling') return 'cell-mounting';
 
-    // Check for overlapping active bookings on the same venue+hall
-    const activeStatuses = ['Draft', 'Tentative', 'Confirmed'];
-    const conflicts = allBookings.filter(b => {
-      if (b.id === bookingId) return false;
-      if (!activeStatuses.includes(b.status)) return false;
-      if (b.venueId !== booking.venueId || b.hall !== booking.hall) return false;
+  if (status === 'confirmed') return 'cell-booked';
+  if (status === 'tentative' || status === 'draft') return 'cell-reserved';
+  return 'cell-booked';
+}
 
-      const bStart = new Date(b.setupDate || b.eventStartDate).getTime();
-      const bEnd = new Date(b.dismantleDate || b.eventEndDate).getTime();
-      const fStart = new Date(booking.setupDate || booking.eventStartDate).getTime();
-      const fEnd = new Date(booking.dismantleDate || booking.eventEndDate).getTime();
+// ── Booking Detail Modal ──────────────────────────────────────────────────────
 
-      return (fStart <= bEnd && fEnd >= bStart);
-    });
-
-    if (conflicts.length > 0) {
-      const conflictNames = conflicts.map(c => `${c.eventName} (${c.status})`).join(', ');
-      setConflictAlert({
-        bookingId,
-        newStatus,
-        message: `Cannot change status — this would create a duplicate booking. "${booking.eventName}" overlaps with: ${conflictNames} on the same hall (${booking.hall}). Please resolve the date overlap first.`,
-      });
-      return;
-    }
-
-    onUpdateStatus(bookingId, newStatus);
-  };
+function BookingDetailModal({ booking, onClose }) {
+  if (!booking) return null;
+  const venue = booking._venueName || '—';
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 520, width: '90%' }}>
-        <div className="modal-header">
-          <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Schedule for
-            </div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--gold)' }}>
-              {date.toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </h2>
-          </div>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>
-            <X size={18} />
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'rgba(0,0,0,0.65)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+      onClick={onClose}
+    >
+      <div
+        style={{
+          background: 'var(--bg-card)', borderRadius: 12, maxWidth: 680, width: '94%',
+          border: '1px solid var(--border)',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.4)', overflow: 'hidden',
+          fontFamily: 'var(--font-body)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header row */}
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <tbody>
+            {[
+              ['Name of Exhibition', booking.eventName || '—'],
+              ['Hall Name', booking.hall || '—'],
+              ['Name of Organisation', booking.organizer || '—'],
+              ['Product Profile', booking.industry || '—'],
+            ].map(([label, val]) => (
+              <tr key={label} style={{ borderBottom: '1px solid var(--border)' }}>
+                <td style={{ padding: '14px 20px', fontWeight: 500, color: 'var(--text-secondary)', width: '40%', background: 'var(--bg-surface)', fontSize: '0.88rem' }}>{label}</td>
+                <td style={{ padding: '14px 20px', color: 'var(--text-primary)', fontSize: '0.88rem' }}>{val}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Period table */}
+        <div style={{ padding: '0 0 0 0' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', borderTop: '1px solid var(--border)' }}>
+            <thead>
+              <tr style={{ background: 'var(--bg-surface)' }}>
+                {['Mounting Period', 'Exhibition Period', 'Dismantling Period'].map(h => (
+                  <th key={h} colSpan={2} style={{ padding: '12px 16px', textAlign: 'left', fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-primary)', borderRight: '1px solid var(--border)' }}>{h}</th>
+                ))}
+              </tr>
+              <tr style={{ background: 'var(--bg-surface)', borderBottom: '1px solid var(--border)' }}>
+                {['Start Date', 'End Date', 'Start Date', 'End Date', 'Start Date', 'End Date'].map((h, i) => (
+                  <th key={i} style={{ padding: '10px 16px', textAlign: 'left', fontSize: '0.78rem', fontWeight: 500, color: 'var(--text-secondary)', borderRight: '1px solid var(--border)', borderTop: '1px solid var(--border)' }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                {[
+                  booking.setupDate, booking.eventStartDate,   // mounting
+                  booking.eventStartDate, booking.eventEndDate,      // exhibition
+                  booking.eventEndDate, booking.dismantleDate,     // dismantle
+                ].map((d, i) => (
+                  <td key={i} style={{ padding: '14px 16px', fontSize: '0.85rem', color: 'var(--text-primary)', borderRight: '1px solid var(--border)' }}>{fmtDate(d)}</td>
+                ))}
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
+          <button
+            onClick={onClose}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 20px', border: '1px solid var(--border)', borderRadius: 8,
+              background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '0.85rem',
+              fontWeight: 500, cursor: 'pointer', transition: 'all 0.2s',
+            }}
+            onMouseOver={e => e.currentTarget.style.background = 'var(--bg-overlay)'}
+            onMouseOut={e => e.currentTarget.style.background = 'var(--bg-card)'}
+          >
+            <X size={14} /> Close
           </button>
         </div>
-        
-        <div className="modal-body" style={{ maxHeight: '60vh', overflowY: 'auto', padding: '20px' }}>
-          {bookings.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-              <CalendarIcon size={40} style={{ opacity: 0.1, marginBottom: 12 }} />
-              <p>No event bookings or setup blocks scheduled for this date.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              {bookings.map(b => {
-                const venue = venues.find(v => v.id === b.venueId);
-                const isSetup = new Date(date).getTime() < new Date(b.eventStartDate).getTime();
-                const isDismantle = new Date(date).getTime() > new Date(b.eventEndDate).getTime();
-                const typeLabel = isSetup ? 'Setup' : isDismantle ? 'Dismantle' : 'Event Live';
-                const typeColor = isSetup ? '#6B9EC9' : isDismantle ? '#9E9E6B' : 'var(--gold)';
-
-                return (
-                  <div key={b.id} className="card" style={{ borderLeft: `4px solid ${typeColor}`, background: 'var(--bg-overlay)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10 }}>
-                      <span style={{ fontSize: '0.7rem', fontWeight: 600, color: typeColor, textTransform: 'uppercase' }}>{typeLabel}</span>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <select
-                          className={`status-select ${b.status.toLowerCase()}`}
-                          value={b.status}
-                          onChange={(e) => handleStatusChange(b.id, e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
-                          style={{ fontSize: '0.65rem' }}
-                        >
-                          {['Draft', 'Tentative', 'Confirmed', 'Completed', 'Cancelled'].map(s => (
-                            <option key={s} value={s}>{s}</option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
-                    <h3 style={{ fontSize: '1rem', margin: '0 0 8px 0', color: 'var(--text-primary)' }}>{b.eventName || b.organizer}</h3>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                        <MapPin size={12} /> {b.hall} · {venue?.name}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                        <Clock size={12} /> {b.eventStartDate} to {b.eventEndDate}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTop: '1px solid var(--border)' }}>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                        {b.organizer} · {b.industry}
-                      </div>
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => { onEditBooking(b); onClose(); }}
-                        style={{ padding: '4px 10px', fontSize: '0.72rem' }}
-                      >
-                        <Edit3 size={12} /> Edit
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="modal-footer" style={{ justifyContent: 'flex-start', gap: 10, background: 'rgba(255,255,255,0.02)' }}>
-          <Info size={14} style={{ color: 'var(--gold)', flexShrink: 0 }} />
-          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-            Total of {bookings.length} active block{bookings.length !== 1 ? 's' : ''} on this date.
-          </div>
-        </div>
       </div>
-
-      {/* Conflict alert modal inside BookingModal */}
-      {conflictAlert && (
-        <div className="modal-overlay" onClick={() => setConflictAlert(null)} style={{ zIndex: 1000 }}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: 460, width: '90%' }}>
-            <div className="modal-header">
-              <h3 style={{ fontSize: '1.1rem', color: '#F87171', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <AlertTriangle size={18} /> Duplicate Booking Conflict
-              </h3>
-            </div>
-            <div className="modal-body">
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', lineHeight: 1.6 }}>
-                {conflictAlert.message}
-              </p>
-            </div>
-            <div className="modal-footer">
-              <button className="btn btn-ghost btn-sm" onClick={() => setConflictAlert(null)}>Dismiss</button>
-              <button
-                className="btn btn-sm"
-                style={{ background: 'rgba(200,160,60,0.15)', color: 'var(--gold)', border: '1px solid rgba(200,160,60,0.3)' }}
-                onClick={() => { 
-                  setConflictAlert(null); 
-                  onClose();
-                  onEditBooking(allBookings.find(b => b.id === conflictAlert.bookingId)); 
-                }}
-              >
-                <Edit3 size={13} /> Edit Booking
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-export default function CalendarView({ bookings, venues, onEditBooking, onUpdateStatus }) {
-  const now = new Date();
-  const [year, setYear]   = useState(now.getFullYear());
-  const [month, setMonth] = useState(now.getMonth());
-  const [selected, setSelected] = useState(null);
+// ── Main CalendarView ─────────────────────────────────────────────────────────
 
-  const bookingsForDate = (date) => {
-    const d = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-    return bookings.filter(b => {
-      const s = new Date(b.setupDate || b.eventStartDate).getTime();
-      const e = new Date(b.dismantleDate || b.eventEndDate).getTime();
-      return d >= s && d <= e;
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const YEARS = Array.from({ length: 10 }, (_, i) => 2024 + i);
+
+export default function CalendarView({ bookings, venues, onEditBooking, onUpdateStatus, isSidebarOpen, toggleSidebar }) {
+  const now = new Date();
+  const [year, setYear] = useState(now.getFullYear());
+  const [month, setMonth] = useState(now.getMonth());
+  const [selectedVenueId, setSelectedVenueId] = useState(venues[0]?.id || '');
+  const [detailBooking, setDetailBooking] = useState(null);
+
+  const selectedVenue = useMemo(() => venues.find(v => v.id === selectedVenueId), [venues, selectedVenueId]);
+  const halls = useMemo(() => selectedVenue?.halls || [], [selectedVenue]);
+
+  const daysInMonth = useMemo(() => {
+    const days = [];
+    const d = new Date(year, month, 1);
+    while (d.getMonth() === month) {
+      days.push(new Date(d));
+      d.setDate(d.getDate() + 1);
+    }
+    return days;
+  }, [year, month]);
+
+  // build a map: "date-hall" → booking[]
+  const bookingMap = useMemo(() => {
+    const map = {};
+    bookings.forEach(b => {
+      if (b.venueId !== selectedVenueId) return;
+      const s = toMidnight(b.setupDate || b.eventStartDate);
+      const e = toMidnight(b.dismantleDate || b.eventEndDate);
+      if (!s || !e) return;
+      const cur = new Date(s);
+      while (cur <= e) {
+        const key = `${cur.getFullYear()}-${cur.getMonth()}-${cur.getDate()}-${b.hall}`;
+        if (!map[key]) map[key] = [];
+        map[key].push(b);
+        cur.setDate(cur.getDate() + 1);
+      }
     });
+    return map;
+  }, [bookings, selectedVenueId]);
+
+  const getCell = (date, hallName) => {
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${hallName}`;
+    return bookingMap[key] || [];
   };
 
-  const days = getCalendarDays(year, month);
+  const isToday = (date) => date.toDateString() === now.toDateString();
 
-  const prevMonth = () => { if (month === 0) { setYear(y => y - 1); setMonth(11); } else setMonth(m => m - 1); };
-  const nextMonth = () => { if (month === 11) { setYear(y => y + 1); setMonth(0); } else setMonth(m => m + 1); };
+  const styles = `
+    .expo-cal-wrap {
+      font-family: var(--font-body);
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+    }
+    .expo-cal-header {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-overlay);
+      flex-wrap: wrap;
+    }
+    .expo-cal-select {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 28px 6px 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      background: var(--bg-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A8F7A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+      cursor: pointer;
+      color: var(--gold);
+      outline: none;
+    }
+    .expo-cal-select-year { color: var(--gold); }
+    .expo-legend {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-card);
+    }
+    .expo-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+    .expo-legend-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .expo-legend-box {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border);
+      flex-shrink: 0;
+    }
+    .expo-cal-scroll {
+      overflow-x: auto;
+      overscroll-behavior: none;
+    }
+    .expo-cal-table {
+      border-collapse: collapse;
+      min-width: 100%;
+      font-size: 0.78rem;
+    }
+    .expo-cal-table th {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-weight: 600;
+      padding: 10px 8px;
+      text-align: center;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    .expo-cal-table th.date-head {
+      min-width: 70px;
+      width: 70px;
+      text-align: left;
+      padding-left: 10px;
+      position: sticky;
+      left: 0;
+      z-index: 3;
+    }
+    .expo-cal-table td {
+      border: 1px solid var(--border);
+      padding: 0;
+      text-align: center;
+    }
+    .expo-cal-table td.date-cell {
+      background: var(--bg-surface);
+      padding: 6px 10px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      min-width: 70px;
+      width: 70px;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      border-right: 2px solid var(--border-gold);
+    }
+    .expo-cal-table td.date-cell.today {
+      background: rgba(201,168,76,0.1);
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .expo-cal-table tr:hover td.date-cell { background: var(--bg-overlay); }
+    .expo-cal-table tr.today-row { background: rgba(201,168,76,0.05); }
 
-  const monthName = new Date(year, month).toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
-  
+    .hall-cell {
+      width: 54px;
+      min-width: 54px;
+      height: 36px;
+      cursor: pointer;
+      transition: filter 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hall-cell:hover { filter: brightness(1.12); }
+
+    .cell-available   { background: #10B981; }
+    .cell-booked      { background: #EF4444; }
+    .cell-mounting    { background: #EC4899; }
+    .cell-reserved    { background: #F59E0B; }
+    .cell-na          { background: #4B5563; }
+
+    .cell-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* Hall column tds: zero padding so color fills edge-to-edge */
+    .expo-cal-table td.hall-td {
+      padding: 0;
+      height: 36px;
+      vertical-align: middle;
+      border: 2px solid rgba(255,255,255) !important;
+      cursor: pointer;
+    }
+    .expo-cal-table td.hall-td:hover {
+      filter: brightness(1.12);
+    }
+
+    .area-row td {
+      background: var(--bg-overlay);
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+      padding: 5px 8px;
+      text-align: center;
+    }
+    .area-row td.date-cell {
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 0.72rem;
+    }
+    .venue-select-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: auto;
+    }
+    .venue-select-wrap label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .venue-select {
+      appearance: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 6px 28px 6px 10px;
+      font-size: 0.82rem;
+      background: var(--bg-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A8F7A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+      cursor: pointer;
+      color: var(--text-primary);
+      outline: none;
+    }
+  `;
+
   return (
-    <div className="page">
-      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <h1>Event Calendar</h1>
-          <p>Comprehensive visualization of bookings including setup, live, and dismantle periods.</p>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 15 }}>
-           <div style={{ display: 'flex', gap: 15, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--gold)' }} /> Confirmed
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#6B9EC9' }} /> Tentative
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#94A3B8' }} /> Draft
-              </div>
-           </div>
-        </div>
-      </div>
+    <>
+      <style>{styles}</style>
 
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '15px 20px', background: 'rgba(255,255,255,0.02)', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-            <span style={{ fontFamily: 'var(--font-display)', fontSize: '1.2rem', color: 'var(--text-primary)', fontWeight: 600 }}>{monthName}</span>
-            <div style={{ display: 'flex', gap: 4 }}>
-              <button className="btn btn-ghost btn-sm" onClick={prevMonth} style={{ padding: 4 }}><ChevronLeft size={18} /></button>
-              <button className="btn btn-ghost btn-sm" onClick={nextMonth} style={{ padding: 4 }}><ChevronRight size={18} /></button>
+      <div className="page">
+        <div className="page-header" style={{ marginBottom: 20 }}>
+          <h1 style={{ marginBottom: 4 }}>Calendar Module</h1>
+          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.85rem' }}>
+            Resource-based visualization of hall availability and event schedules.
+          </p>
+        </div>
+
+        <div className="expo-cal-wrap">
+          {/* ── Top controls ── */}
+          <div className="expo-cal-header">
+            <select
+              className="expo-cal-select"
+              value={month}
+              onChange={e => setMonth(Number(e.target.value))}
+            >
+              {MONTHS.map((m, i) => <option key={m} value={i}>{m}</option>)}
+            </select>
+
+            <select
+              className="expo-cal-select expo-cal-select-year"
+              value={year}
+              onChange={e => setYear(Number(e.target.value))}
+            >
+              {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+            </select>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              <div style={{ width: 14, height: 14, border: '2px solid var(--border)' }} />
+              Available Date
+            </div>
+
+            <div className="venue-select-wrap">
+              <label>Venue:</label>
+              <select
+                className="venue-select"
+                value={selectedVenueId}
+                onChange={e => setSelectedVenueId(e.target.value)}
+              >
+                {venues.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+              </select>
+              
+              <button 
+                onClick={toggleSidebar}
+                style={{
+                  background: 'transparent', border: '1px solid var(--border)', borderRadius: 6,
+                  color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 32, height: 32, marginLeft: 8, transition: 'all 0.2s'
+                }}
+                title={!isSidebarOpen ? "Exit Full Screen" : "Full Screen Calendar"}
+                onMouseOver={e => e.currentTarget.style.background = 'var(--bg-overlay)'}
+                onMouseOut={e => e.currentTarget.style.background = 'transparent'}
+              >
+                {!isSidebarOpen ? <Minimize size={16} /> : <Maximize size={16} />}
+              </button>
             </div>
           </div>
-          <button className="btn btn-ghost btn-sm" onClick={() => { setYear(now.getFullYear()); setMonth(now.getMonth()); }}>Today</button>
-        </div>
 
-        <div className="cal-grid" style={{ background: 'rgba(255,255,255,0.01)' }}>
-          {DAYS.map(d => <div key={d} className="cal-header-cell" style={{ padding: '12px 0', borderBottom: '1px solid var(--border)' }}>{d}</div>)}
-        </div>
-
-        <div className="cal-grid">
-          {days.map((day, i) => {
-            const dayBookings = bookingsForDate(day.date);
-            const isToday = isSameDay(day.date, now);
-            
-            return (
-              <div
-                key={i}
-                className={`cal-day ${!day.current ? 'other-month' : ''} ${isToday ? 'today' : ''}`}
-                style={{ minHeight: 120, cursor: 'pointer' }}
-                onClick={() => setSelected(day.date)}
-              >
-                <div className="cal-day-num" style={{ marginBottom: 8, fontWeight: isToday ? 700 : 400 }}>{day.date.getDate()}</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  {dayBookings.map(b => (
-                    <div 
-                      key={b.id} 
-                      className={`cal-event-dot ${b.status.toLowerCase()}`} 
-                      style={{ 
-                        whiteSpace: 'nowrap', 
-                        overflow: 'hidden', 
-                        textOverflow: 'ellipsis',
-                        padding: '2px 6px',
-                        fontSize: '0.65rem'
-                      }}
-                    >
-                      {b.eventName || b.organizer}
-                    </div>
-                  ))}
-                </div>
+          {/* ── Legend ── */}
+          <div className="expo-legend">
+            {[
+              { color: '#EF4444', label: 'Booked-Exhibition', dot: true },
+              { color: '#EC4899', label: 'Booked-Mounting / Dismantling', dot: true },
+              { color: '#F59E0B', label: 'Reserved / Booking in Progress', dot: true },
+              { color: '#10B981', label: 'Available', dot: true },
+              { color: '#4B5563', label: 'Not Available', dot: true },
+            ].map(({ color, label, dot }) => (
+              <div key={label} className="expo-legend-item">
+                <div className="expo-legend-dot" style={{ background: color }} />
+                {label}
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* ── Table ── */}
+          <div className="expo-cal-scroll" style={{ overflowX: 'auto', paddingBottom: 20, flex: 1, overflowY: !isSidebarOpen ? 'auto' : 'visible' }}>
+            <table className="expo-cal-table">
+              <thead>
+                <tr>
+                  <th className="date-head">Halls</th>
+                  {halls.map(h => <th key={h.name}>{h.name}</th>)}
+                </tr>
+                <tr className="area-row">
+                  <td className="date-cell" style={{ background: 'var(--bg-surface)', fontWeight: 600 }}>Area (in sqm)</td>
+                  {halls.map(h => <td key={h.name}>{h.areaSqm ?? '—'}</td>)}
+                </tr>
+              </thead>
+              <tbody>
+                {daysInMonth.map((date, idx) => {
+                  const today = isToday(date);
+                  return (
+                    <tr key={idx} className={today ? 'today-row' : ''}>
+                      <td className={`date-cell${today ? ' today' : ''}`}>
+                        {date.getDate()} {date.toLocaleDateString('en-IN', { month: 'short' })}
+                      </td>
+                      {halls.map(hall => {
+                        const cellBookings = getCell(date, hall.name).filter(
+                          b => !['cancelled', 'completed'].includes((b.status || '').toLowerCase())
+                        );
+                        const hasBooking = cellBookings.length > 0;
+                        const booking = cellBookings[0];
+                        let cellClass = 'cell-available';
+                        let showEye = false;
+
+                        if (hasBooking) {
+                          cellClass = getStatusClass(booking, date);
+                          showEye = cellClass === 'cell-booked';
+                        } else if (hall.notAvailable) {
+                          cellClass = 'cell-na';
+                        }
+
+                        return (
+                          <td
+                            key={hall.name}
+                            className={`hall-td ${cellClass}`}
+                            title={hasBooking ? `${booking.eventName || booking.organizer} · ${booking.status}` : 'Available'}
+                            onClick={() => {
+                              if (hasBooking) {
+                                setDetailBooking({
+                                  ...booking,
+                                  _venueName: selectedVenue?.name,
+                                });
+                              }
+                            }}
+                          >
+                            {showEye && (
+                              <div className="cell-icon">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                  <circle cx="12" cy="12" r="3" />
+                                </svg>
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+              {/* Repeat hall header at bottom */}
+              <tfoot>
+                <tr>
+                  <th className="date-head" style={{ background: 'var(--bg-surface)', position: 'sticky', bottom: 0, zIndex: 10, borderTop: '1px solid var(--border)' }}>Halls</th>
+                  {halls.map(h => (
+                    <th key={h.name} style={{ background: 'var(--bg-surface)', position: 'sticky', bottom: 0, borderTop: '1px solid var(--border)', borderRight: '1px solid var(--border)', borderBottom: '1px solid var(--border)', padding: '10px 8px', fontSize: '0.78rem', zIndex: 9 }}>
+                      {h.name}
+                    </th>
+                  ))}
+                </tr>
+                <tr className="area-row">
+                  <td className="date-cell" style={{ background: 'var(--bg-surface)', fontWeight: 600, position: 'sticky', bottom: 0, zIndex: 10 }}>Area (in sqm)</td>
+                  {halls.map(h => <td key={h.name} style={{ background: 'var(--bg-overlay)', position: 'sticky', bottom: 0, borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border)' }}>{h.areaSqm ?? '—'}</td>)}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </div>
       </div>
 
-      <BookingModal 
-        date={selected} 
-        bookings={selected ? bookingsForDate(selected) : []} 
-        allBookings={bookings}
-        venues={venues}
-        onClose={() => setSelected(null)}
-        onEditBooking={onEditBooking}
-        onUpdateStatus={onUpdateStatus}
+      <BookingDetailModal
+        booking={detailBooking}
+        onClose={() => setDetailBooking(null)}
       />
-    </div>
+    </>
   );
 }

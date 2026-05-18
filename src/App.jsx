@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Navigate, Route, Routes, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import Dashboard from './components/Dashboard';
@@ -11,6 +11,18 @@ import AIInsights from './components/AIInsights';
 import MasterData from './components/MasterData';
 import UserManagement from './components/UserManagement';
 import Venues from './components/Venues';
+
+// Report sub-pages
+import OverviewReport     from './components/reports/OverviewReport';
+import CompetitiveReport  from './components/reports/CompetitiveReport';
+import OwnShowsReport     from './components/reports/OwnShowsReport';
+import DemandReport       from './components/reports/DemandReport';
+import HallAllocationReport from './components/reports/HallAllocationReport';
+import ConflictReport     from './components/reports/ConflictReport';
+import RevenueReport      from './components/reports/RevenueReport';
+import BillingReport      from './components/reports/BillingReport';
+import UtilizationReport  from './components/reports/UtilizationReport';
+
 import {
   initialBookings,
   masterData,
@@ -20,23 +32,23 @@ import {
 const DEFAULT_ROUTE = 'dashboard';
 
 const routeConfig = {
-  dashboard: '/dashboard',
-  calendar: '/calendar',
-  venues: '/venues',
-  bookings: '/bookings',
-  'new-booking': '/bookings/new',
+  dashboard:    '/dashboard',
+  calendar:     '/calendar',
+  venues:       '/venues',
+  bookings:     '/bookings',
+  'new-booking':  '/bookings/new',
   'edit-booking': '/bookings/edit',
-  reports: '/reports',
-  ai: '/ai-insights',
-  master: '/master-data',
-  users: '/users',
+  reports:      '/reports',
+  ai:           '/ai-insights',
+  master:       '/master-data',
+  users:        '/users',
 };
 
-function AdminShell({ page, onNav, onAddClick, currentUser, children }) {
+function AdminShell({ page, onNav, onAddClick, currentUser, isSidebarOpen, children }) {
   return (
     <div className="app-shell" data-route={routeConfig[page] || routeConfig[DEFAULT_ROUTE]}>
-      <Sidebar active={page} onNav={onNav} currentUser={currentUser} />
-      <div className="main-content">
+      {isSidebarOpen && <Sidebar active={page} onNav={onNav} currentUser={currentUser} />}
+      <div className="main-content" style={{ marginLeft: isSidebarOpen ? '240px' : '0', transition: 'margin-left 0.2s' }}>
         <Topbar page={page} onNav={onNav} onAddClick={onAddClick} />
         {children}
       </div>
@@ -45,331 +57,176 @@ function AdminShell({ page, onNav, onAddClick, currentUser, children }) {
 }
 
 export default function App() {
-  const [bookings, setBookings] = useState(initialBookings);
-  const [venues, setVenues] = useState(masterData.venues);
-  const [users, setUsers] = useState(initialUsers);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const getFromLocalStorage = (key, defaultValue) => {
+    const saved = localStorage.getItem(key);
+    try { return saved ? JSON.parse(saved) : defaultValue; }
+    catch (e) { console.error(`Error loading ${key} from localStorage:`, e); return defaultValue; }
+  };
+
+  const [bookings, setBookings]         = useState(() => getFromLocalStorage('bookings', initialBookings));
+  const [venues, setVenues]             = useState(() => {
+    const saved = getFromLocalStorage('venues', masterData.venues);
+    // Force sync if cached data has the old hall counts
+    if (saved && saved.length > 0 && saved[0].halls.length < 10) {
+      return masterData.venues;
+    }
+    return saved;
+  });
+  const [users, setUsers]               = useState(() => getFromLocalStorage('users', initialUsers));
   const [userFormOpen, setUserFormOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState(null);
 
-  // Master data state (lifted for CRUD)
-  const [industries, setIndustries] = useState(masterData.industries);
-  const [sectors, setSectors] = useState(masterData.sectors);
-  const [organizers, setOrganizers] = useState(masterData.organizers);
-  const [eventStatuses, setEventStatuses] = useState(masterData.eventStatuses);
-  const [eventTypes, setEventTypes] = useState(masterData.eventTypes);
-  const [primePeriods, setPrimePeriods] = useState(masterData.primePeriods);
+  const [industries, setIndustries]     = useState(() => getFromLocalStorage('industries', masterData.industries));
+  const [sectors, setSectors]           = useState(() => getFromLocalStorage('sectors', masterData.sectors));
+  const [organizers, setOrganizers]     = useState(() => getFromLocalStorage('organizers', masterData.organizers));
+  const [eventStatuses, setEventStatuses] = useState(() => getFromLocalStorage('eventStatuses', masterData.eventStatuses));
+  const [eventTypes, setEventTypes]     = useState(() => getFromLocalStorage('eventTypes', masterData.eventTypes));
+  const [primePeriods, setPrimePeriods] = useState(() => getFromLocalStorage('primePeriods', masterData.primePeriods));
+
+  useEffect(() => localStorage.setItem('bookings', JSON.stringify(bookings)), [bookings]);
+  useEffect(() => localStorage.setItem('venues', JSON.stringify(venues)), [venues]);
+  useEffect(() => localStorage.setItem('users', JSON.stringify(users)), [users]);
+  useEffect(() => localStorage.setItem('industries', JSON.stringify(industries)), [industries]);
+  useEffect(() => localStorage.setItem('sectors', JSON.stringify(sectors)), [sectors]);
+  useEffect(() => localStorage.setItem('organizers', JSON.stringify(organizers)), [organizers]);
+  useEffect(() => localStorage.setItem('eventStatuses', JSON.stringify(eventStatuses)), [eventStatuses]);
+  useEffect(() => localStorage.setItem('eventTypes', JSON.stringify(eventTypes)), [eventTypes]);
+  useEffect(() => localStorage.setItem('primePeriods', JSON.stringify(primePeriods)), [primePeriods]);
 
   const navigate = useNavigate();
+  const currentUser = users.find(u => u.role === 'Admin') || users[0];
 
-  const currentUser = users.find((user) => user.role === 'Admin') || users[0];
-
-  const navigateTo = (routeKey) => {
-    navigate(routeConfig[routeKey] || routeConfig[DEFAULT_ROUTE]);
+  const navigateTo = (routeKeyOrPath) => {
+    // Support both route keys ('reports') and direct paths ('/reports/competitive')
+    if (routeKeyOrPath.startsWith('/')) {
+      navigate(routeKeyOrPath);
+    } else {
+      navigate(routeConfig[routeKeyOrPath] || routeConfig[DEFAULT_ROUTE]);
+    }
   };
 
-  // ── Conflict detection utility ──────────────
+  // ── Conflict detection ──
   const findConflicts = (targetBooking, currentBookings, excludeId = null) => {
     const activeStatuses = ['Draft', 'Tentative', 'Confirmed'];
     return currentBookings.filter(b => {
       if (b.id === excludeId) return false;
       if (!activeStatuses.includes(b.status)) return false;
       if (b.venueId !== targetBooking.venueId || b.hall !== targetBooking.hall) return false;
-
       const bStart = new Date(b.setupDate || b.eventStartDate).getTime();
-      const bEnd = new Date(b.dismantleDate || b.eventEndDate).getTime();
+      const bEnd   = new Date(b.dismantleDate || b.eventEndDate).getTime();
       const fStart = new Date(targetBooking.setupDate || targetBooking.eventStartDate).getTime();
-      const fEnd = new Date(targetBooking.dismantleDate || targetBooking.eventEndDate).getTime();
-
-      return (fStart <= bEnd && fEnd >= bStart);
+      const fEnd   = new Date(targetBooking.dismantleDate || targetBooking.eventEndDate).getTime();
+      return fStart <= bEnd && fEnd >= bStart;
     });
   };
 
-  // ── Booking CRUD ──────────────────────────────
+  // ── Booking CRUD ──
   const addBooking = (newBooking) => {
-    // Server-side guard: prevent duplicate even if form validation was bypassed
-    const conflicts = findConflicts(newBooking, bookings);
-    if (conflicts.length > 0) {
-      return; // Form-level validation already shows the error
-    }
-    setBookings((currentBookings) => [newBooking, ...currentBookings]);
+    if (findConflicts(newBooking, bookings).length > 0) return;
+    setBookings(prev => [newBooking, ...prev]);
     navigateTo('bookings');
   };
-
   const updateBooking = (updatedBooking) => {
-    const conflicts = findConflicts(updatedBooking, bookings, updatedBooking.id);
-    if (conflicts.length > 0) {
-      return; // Form-level validation already shows the error
-    }
-    setBookings((currentBookings) =>
-      currentBookings.map((booking) =>
-        booking.id === updatedBooking.id ? { ...booking, ...updatedBooking } : booking,
-      ),
-    );
+    if (findConflicts(updatedBooking, bookings, updatedBooking.id).length > 0) return;
+    setBookings(prev => prev.map(b => b.id === updatedBooking.id ? { ...b, ...updatedBooking } : b));
     setEditingBooking(null);
     navigateTo('bookings');
   };
-
   const updateBookingStatus = (id, status) => {
-    // Allow terminal statuses (Cancelled/Completed) without conflict check
     if (status !== 'Cancelled' && status !== 'Completed') {
       const booking = bookings.find(b => b.id === id);
-      if (booking) {
-        const conflicts = findConflicts(booking, bookings, id);
-        if (conflicts.length > 0) {
-          return; // BookingsList handles showing the conflict modal
-        }
-      }
+      if (booking && findConflicts(booking, bookings, id).length > 0) return;
     }
-    setBookings((currentBookings) =>
-      currentBookings.map((booking) =>
-        booking.id === id ? { ...booking, status } : booking,
-      ),
-    );
+    setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
   };
+  const deleteBooking = (id) => setBookings(prev => prev.filter(b => b.id !== id));
+  const startEditBooking = (booking) => { setEditingBooking(booking); navigateTo('edit-booking'); };
 
-  const deleteBooking = (id) => {
-    setBookings((currentBookings) =>
-      currentBookings.filter((booking) => booking.id !== id),
-    );
-  };
+  // ── Venue CRUD ──
+  const addVenue = (venue) => setVenues(prev => [...prev, venue]);
+  const addHall  = (venueId, hallName) => setVenues(prev =>
+    prev.map(v => v.id === venueId
+      ? { ...v, halls: [...v.halls, { name: hallName, image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop' }] }
+      : v
+    )
+  );
 
-  const startEditBooking = (booking) => {
-    setEditingBooking(booking);
-    navigateTo('edit-booking');
-  };
+  // ── User CRUD ──
+  const addUser          = (user) => { setUsers(prev => [...prev, user]); setUserFormOpen(false); };
+  const updateUser       = (u)    => { setUsers(prev => prev.map(x => x.id === u.id ? u : x)); setUserFormOpen(false); };
+  const toggleUserStatus = (id)   => setUsers(prev => prev.map(u => u.id === id ? { ...u, status: u.status === 'active' ? 'inactive' : 'active' } : u));
+  const removeUser       = (id)   => setUsers(prev => prev.filter(u => u.id !== id));
 
-  // ── Venue CRUD ────────────────────────────────
-  const addVenue = (venue) => {
-    setVenues((currentVenues) => [...currentVenues, venue]);
-  };
-
-  const addHall = (venueId, hallName) => {
-    setVenues((currentVenues) =>
-      currentVenues.map((venue) =>
-        venue.id === venueId
-          ? { 
-              ...venue, 
-              halls: [
-                ...venue.halls, 
-                { 
-                  name: hallName, 
-                  image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" 
-                }
-              ] 
-            }
-          : venue,
-      ),
-    );
-  };
-
-  // ── User CRUD ─────────────────────────────────
-  const addUser = (user) => {
-    setUsers((currentUsers) => [...currentUsers, user]);
-    setUserFormOpen(false);
-  };
-
-  const updateUser = (updatedUser) => {
-    setUsers((currentUsers) =>
-      currentUsers.map((user) => (user.id === updatedUser.id ? updatedUser : user)),
-    );
-    setUserFormOpen(false);
-  };
-
-  const toggleUserStatus = (id) => {
-    setUsers((currentUsers) =>
-      currentUsers.map((user) =>
-        user.id === id
-          ? { ...user, status: user.status === 'active' ? 'inactive' : 'active' }
-          : user,
-      ),
-    );
-  };
-
-  const removeUser = (id) => {
-    setUsers((currentUsers) => currentUsers.filter((user) => user.id !== id));
-  };
-
-  // ── Master Data CRUD Handlers ─────────────────
+  // ── Master Data CRUD ──
   const masterCrudHandlers = {
-    industries: {
-      add: (item) => setIndustries((prev) => [...prev, item]),
-      remove: (item) => setIndustries((prev) => prev.filter((i) => i !== item)),
-      update: (oldVal, newVal) => setIndustries((prev) => prev.map((i) => i === oldVal ? newVal : i)),
-    },
-    sectors: {
-      add: (item) => setSectors((prev) => [...prev, item]),
-      remove: (item) => setSectors((prev) => prev.filter((s) => s !== item)),
-      update: (oldVal, newVal) => setSectors((prev) => prev.map((s) => s === oldVal ? newVal : s)),
-    },
-    organizers: {
-      add: (item) => setOrganizers((prev) => [...prev, item]),
-      remove: (item) => setOrganizers((prev) => prev.filter((o) => o !== item)),
-      update: (oldVal, newVal) => setOrganizers((prev) => prev.map((o) => o === oldVal ? newVal : o)),
-    },
-    eventStatuses: {
-      add: (item) => setEventStatuses((prev) => [...prev, item]),
-      remove: (item) => setEventStatuses((prev) => prev.filter((s) => s !== item)),
-      update: (oldVal, newVal) => setEventStatuses((prev) => prev.map((s) => s === oldVal ? newVal : s)),
-    },
-    eventTypes: {
-      add: (item) => setEventTypes((prev) => [...prev, item]),
-      remove: (item) => setEventTypes((prev) => prev.filter((t) => t !== item)),
-      update: (oldVal, newVal) => setEventTypes((prev) => prev.map((t) => t === oldVal ? newVal : t)),
-    },
-    primePeriods: {
-      add: (item) => setPrimePeriods((prev) => [...prev, item]),
-      remove: (item) => setPrimePeriods((prev) => prev.filter((p) => p.label !== item.label)),
-      update: (oldVal, newVal) => setPrimePeriods((prev) => prev.map((p) => p.label === oldVal.label ? newVal : p)),
-    },
+    industries:   { add: i  => setIndustries(p => [...p,i]),    remove: i  => setIndustries(p => p.filter(x => x!==i)),       update: (o,n) => setIndustries(p => p.map(x => x===o?n:x)) },
+    sectors:      { add: s  => setSectors(p => [...p,s]),        remove: s  => setSectors(p => p.filter(x => x!==s)),           update: (o,n) => setSectors(p => p.map(x => x===o?n:x)) },
+    organizers:   { add: o  => setOrganizers(p => [...p,o]),     remove: o  => setOrganizers(p => p.filter(x => x!==o)),        update: (o,n) => setOrganizers(p => p.map(x => x===o?n:x)) },
+    eventStatuses:{ add: s  => setEventStatuses(p => [...p,s]),  remove: s  => setEventStatuses(p => p.filter(x => x!==s)),     update: (o,n) => setEventStatuses(p => p.map(x => x===o?n:x)) },
+    eventTypes:   { add: t  => setEventTypes(p => [...p,t]),     remove: t  => setEventTypes(p => p.filter(x => x!==t)),        update: (o,n) => setEventTypes(p => p.map(x => x===o?n:x)) },
+    primePeriods: { add: pp => setPrimePeriods(p => [...p,pp]),  remove: pp => setPrimePeriods(p => p.filter(x => x.label!==pp.label)), update: (o,n) => setPrimePeriods(p => p.map(x => x.label===o.label?n:x)) },
+  };  const location = useLocation();
+  const currentPath = location.pathname;
+
+  let activePage = DEFAULT_ROUTE;
+  if (currentPath.startsWith('/reports')) {
+    activePage = 'reports';
+  } else {
+    // 1. Try exact match first
+    const exactKey = Object.keys(routeConfig).find(key => routeConfig[key] === currentPath);
+    if (exactKey) {
+      activePage = exactKey;
+    } else {
+      // 2. Try prefix match (longest prefix first to match /bookings/new over /bookings)
+      const sortedKeys = Object.keys(routeConfig).sort((a, b) => routeConfig[b].length - routeConfig[a].length);
+      const matchedKey = sortedKeys.find(key => {
+        const routePath = routeConfig[key];
+        return routePath !== '/' && currentPath.startsWith(routePath);
+      });
+      if (matchedKey) activePage = matchedKey;
+    }
+  }
+
+  const handleAddClick = () => {
+    if (activePage === 'users') {
+      setUserFormOpen(true);
+    }
   };
 
   return (
-    <Routes>
-      <Route path="/" element={<Navigate to={routeConfig[DEFAULT_ROUTE]} replace />} />
-      <Route
-        path={routeConfig.dashboard}
-        element={
-          <AdminShell page="dashboard" onNav={navigateTo} currentUser={currentUser}>
-            <Dashboard
-              bookings={bookings}
-              venues={venues}
-              onNav={navigateTo}
-              onUpdateStatus={updateBookingStatus}
-              currentUser={currentUser}
-            />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig.venues}
-        element={
-          <AdminShell page="venues" onNav={navigateTo} currentUser={currentUser}>
-            <Venues venues={venues} />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig.calendar}
-        element={
-          <AdminShell page="calendar" onNav={navigateTo} currentUser={currentUser}>
-            <CalendarView
-              bookings={bookings}
-              venues={venues}
-              onEditBooking={startEditBooking}
-              onUpdateStatus={updateBookingStatus}
-            />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig.bookings}
-        element={
-          <AdminShell page="bookings" onNav={navigateTo} currentUser={currentUser}>
-            <BookingsList
-              bookings={bookings}
-              venues={venues}
-              industries={industries}
-              onNav={navigateTo}
-              onUpdateStatus={updateBookingStatus}
-              onEditBooking={startEditBooking}
-              onDeleteBooking={deleteBooking}
-            />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig['new-booking']}
-        element={
-          <AdminShell page="new-booking" onNav={navigateTo} currentUser={currentUser}>
-            <BookingForm
-              bookings={bookings}
-              venues={venues}
-              organizers={organizers}
-              industries={industries}
-              sectors={sectors}
-              eventTypes={eventTypes}
-              eventStatuses={eventStatuses}
-              onSave={addBooking}
-            />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig['edit-booking']}
-        element={
-          <AdminShell page="edit-booking" onNav={navigateTo} currentUser={currentUser}>
-            <BookingForm
-              bookings={bookings}
-              venues={venues}
-              organizers={organizers}
-              industries={industries}
-              sectors={sectors}
-              eventTypes={eventTypes}
-              eventStatuses={eventStatuses}
-              onSave={updateBooking}
-              editBooking={editingBooking}
-            />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig.reports}
-        element={
-          <AdminShell page="reports" onNav={navigateTo} currentUser={currentUser}>
-            <Reports bookings={bookings} venues={venues} />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig.ai}
-        element={
-          <AdminShell page="ai" onNav={navigateTo} currentUser={currentUser}>
-            <AIInsights bookings={bookings} />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig.master}
-        element={
-          <AdminShell page="master" onNav={navigateTo} currentUser={currentUser}>
-            <MasterData
-              venues={venues}
-              organizers={organizers}
-              industries={industries}
-              sectors={sectors}
-              eventStatuses={eventStatuses}
-              eventTypes={eventTypes}
-              primePeriods={primePeriods}
-              onAddVenue={addVenue}
-              onAddHall={addHall}
-              masterCrudHandlers={masterCrudHandlers}
-              currentUser={currentUser}
-            />
-          </AdminShell>
-        }
-      />
-      <Route
-        path={routeConfig.users}
-        element={
-          <AdminShell 
-            page="users" 
-            onNav={navigateTo} 
-            onAddClick={() => setUserFormOpen(true)} 
-            currentUser={currentUser}
-          >
-            <UserManagement
-              users={users}
-              onAddUser={addUser}
-              onUpdateUser={updateUser}
-              onToggleUserStatus={toggleUserStatus}
-              onRemoveUser={removeUser}
-              isFormOpen={userFormOpen}
-              onCloseForm={() => setUserFormOpen(false)}
-            />
-          </AdminShell>
-        }
-      />
-      <Route path="*" element={<Navigate to={routeConfig[DEFAULT_ROUTE]} replace />} />
-    </Routes>
+    <AdminShell page={activePage} onNav={navigateTo} onAddClick={handleAddClick} currentUser={currentUser} isSidebarOpen={isSidebarOpen}>
+      <Routes>
+        <Route path="/" element={<Navigate to={routeConfig[DEFAULT_ROUTE]} replace />} />
+
+        {/* Core pages */}
+        <Route path="/dashboard" element={<Dashboard bookings={bookings} venues={venues} onNav={navigateTo} onUpdateStatus={updateBookingStatus} currentUser={currentUser} />} />
+        <Route path="/venues"    element={<Venues venues={venues} />} />
+        <Route path="/calendar"  element={<CalendarView bookings={bookings} venues={venues} onEditBooking={startEditBooking} onUpdateStatus={updateBookingStatus} isSidebarOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />} />
+        <Route path="/bookings"  element={<BookingsList bookings={bookings} venues={venues} industries={industries} onNav={navigateTo} onUpdateStatus={updateBookingStatus} onEditBooking={startEditBooking} onDeleteBooking={deleteBooking} />} />
+        <Route path="/bookings/new"  element={<BookingForm bookings={bookings} venues={venues} organizers={organizers} industries={industries} sectors={sectors} eventTypes={eventTypes} eventStatuses={eventStatuses} onSave={addBooking} />} />
+        <Route path="/bookings/edit" element={<BookingForm bookings={bookings} venues={venues} organizers={organizers} industries={industries} sectors={sectors} eventTypes={eventTypes} eventStatuses={eventStatuses} onSave={updateBooking} editBooking={editingBooking} />} />
+        <Route path="/ai-insights"   element={<AIInsights bookings={bookings} />} />
+        <Route path="/master-data"   element={<MasterData venues={venues} organizers={organizers} industries={industries} sectors={sectors} eventStatuses={eventStatuses} eventTypes={eventTypes} primePeriods={primePeriods} onAddVenue={addVenue} onAddHall={addHall} masterCrudHandlers={masterCrudHandlers} currentUser={currentUser} />} />
+        <Route path="/users" element={<UserManagement users={users} onAddUser={addUser} onUpdateUser={updateUser} onToggleUserStatus={toggleUserStatus} onRemoveUser={removeUser} isFormOpen={userFormOpen} onCloseForm={() => setUserFormOpen(false)} />} />
+
+        {/* Reports root → redirect to overview */}
+        <Route path="/reports" element={<Reports />} />
+
+        {/* Individual report sub-pages */}
+        <Route path="/reports/overview"     element={<OverviewReport     bookings={bookings} venues={venues} />} />
+        <Route path="/reports/competitive"  element={<CompetitiveReport  bookings={bookings} venues={venues} />} />
+        <Route path="/reports/own-shows"    element={<OwnShowsReport     bookings={bookings} venues={venues} />} />
+        <Route path="/reports/demand"       element={<DemandReport       bookings={bookings} venues={venues} />} />
+        <Route path="/reports/hall-alloc"   element={<HallAllocationReport bookings={bookings} venues={venues} />} />
+        <Route path="/reports/conflict"     element={<ConflictReport     bookings={bookings} venues={venues} />} />
+        <Route path="/reports/revenue"      element={<RevenueReport      bookings={bookings} venues={venues} />} />
+        <Route path="/reports/billing"      element={<BillingReport      bookings={bookings} venues={venues} />} />
+        <Route path="/reports/utilization"  element={<UtilizationReport  bookings={bookings} venues={venues} />} />
+
+        <Route path="*" element={<Navigate to={routeConfig[DEFAULT_ROUTE]} replace />} />
+      </Routes>
+    </AdminShell>
   );
 }
