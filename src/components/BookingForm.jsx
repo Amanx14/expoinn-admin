@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { 
   Calendar, 
   MapPin, 
@@ -23,6 +24,7 @@ export default function BookingForm({
   editBooking = null,
 }) {
   const isEditMode = !!editBooking;
+  const location = useLocation();
 
   const getInitialFormData = () => {
     if (editBooking) {
@@ -44,16 +46,19 @@ export default function BookingForm({
         guests: editBooking.guests || 0,
       };
     }
+
+    const state = location.state || {};
+
     return {
       eventName: '',
-      venueId: venues[0]?.id || '',
-      hall: '',
+      venueId: state.venueId || venues[0]?.id || '',
+      hall: state.hall || '',
       organizer: organizers[0] || '',
       industry: industries[0] || '',
       sectors: [],
       eventType: eventTypes[0] || 'Corporate Event',
       setupDate: '',
-      eventStartDate: '',
+      eventStartDate: state.date || '',
       eventEndDate: '',
       dismantleDate: '',
       status: 'Tentative',
@@ -65,11 +70,24 @@ export default function BookingForm({
 
   const [formData, setFormData] = useState(getInitialFormData);
   const [errors, setErrors] = useState({});
+  const [selectionMode, setSelectionMode] = useState(() => {
+    if (editBooking && editBooking.hall) {
+      const isMulti = editBooking.hall.includes(',') || Array.isArray(editBooking.hall);
+      return isMulti ? 'multiple' : 'single';
+    }
+    return 'single';
+  });
 
   // Reset form when editBooking changes
   useEffect(() => {
     setFormData(getInitialFormData());
     setErrors({});
+    if (editBooking && editBooking.hall) {
+      const isMulti = editBooking.hall.includes(',') || Array.isArray(editBooking.hall);
+      setSelectionMode(isMulti ? 'multiple' : 'single');
+    } else {
+      setSelectionMode('single');
+    }
   }, [editBooking]);
 
   // Filter halls based on selected venue
@@ -82,7 +100,9 @@ export default function BookingForm({
   useMemo(() => {
     if (availableHalls.length > 0) {
       const hallNames = availableHalls.map(h => h.name);
-      if (!hallNames.includes(formData.hall)) {
+      const selected = (formData.hall || '').split(',').map(h => h.trim()).filter(Boolean);
+      const hasValidHall = selected.some(h => hallNames.includes(h));
+      if (!hasValidHall) {
         setFormData(prev => ({ ...prev, hall: hallNames[0] }));
       }
     }
@@ -92,6 +112,28 @@ export default function BookingForm({
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }));
+  };
+
+  const selectedHallsList = useMemo(() => {
+    if (!formData.hall) return [];
+    return formData.hall.split(',').map(h => h.trim()).filter(Boolean);
+  }, [formData.hall]);
+
+  const handleHallClick = (hallName) => {
+    if (selectionMode === 'single') {
+      setFormData(prev => ({ ...prev, hall: hallName }));
+    } else {
+      setFormData(prev => {
+        let list = prev.hall.split(',').map(h => h.trim()).filter(Boolean);
+        if (list.includes(hallName)) {
+          list = list.filter(h => h !== hallName);
+        } else {
+          list = [...list, hallName];
+        }
+        return { ...prev, hall: list.join(', ') };
+      });
+    }
+    if (errors.hall) setErrors(prev => ({ ...prev, hall: '' }));
   };
 
   const toggleSector = (sector) => {
@@ -133,7 +175,12 @@ export default function BookingForm({
       const conflictingBookings = bookings.filter(b => {
         if (isEditMode && b.id === editBooking.id) return false;
         if (!activeStatuses.includes(b.status)) return false;
-        if (b.venueId !== formData.venueId || b.hall !== formData.hall) return false;
+        
+        const bHalls = typeof b.hall === 'string' ? b.hall.split(',').map(h => h.trim()) : [b.hall];
+        const fHalls = typeof formData.hall === 'string' ? formData.hall.split(',').map(h => h.trim()) : [formData.hall];
+        const hasOverlapHall = bHalls.some(h => fHalls.includes(h));
+        
+        if (b.venueId !== formData.venueId || !hasOverlapHall) return false;
         
         const bStart = new Date(b.setupDate || b.eventStartDate).getTime();
         const bEnd = new Date(b.dismantleDate || b.eventEndDate).getTime();
@@ -237,18 +284,77 @@ export default function BookingForm({
 
             <div className="card" style={{ marginBottom: 20 }}>
               <div className="section-title">Location & Logistics</div>
-              <div className="form-grid" style={{ marginBottom: 18 }}>
-                <div className="form-group">
+              <div style={{ marginBottom: 18 }}>
+                <div className="form-group" style={{ marginBottom: 18 }}>
                   <label className="form-label"><MapPin size={12} /> Venue</label>
                   <select className="form-select" name="venueId" value={formData.venueId} onChange={handleChange}>
                     {venues.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                   </select>
                 </div>
-                <div className="form-group">
-                  <label className="form-label"><Building2 size={12} /> Hall</label>
-                  <select className="form-select" name="hall" value={formData.hall} onChange={handleChange}>
-                    {availableHalls.map(h => <option key={h.name} value={h.name}>{h.name}</option>)}
-                  </select>
+
+                <div className="form-group" style={{ marginBottom: 18 }}>
+                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span><Building2 size={12} style={{ marginRight: 6 }} /> Hall Selection</span>
+                    <div className="segmented-control" style={{ display: 'flex', background: 'var(--bg-overlay)', padding: 3, borderRadius: 6, border: '1px solid var(--border)' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectionMode('single');
+                          const list = formData.hall.split(',').map(h => h.trim()).filter(Boolean);
+                          if (list.length > 0) {
+                            setFormData(prev => ({ ...prev, hall: list[0] }));
+                          }
+                        }}
+                        style={{
+                          padding: '4px 10px', fontSize: '0.72rem', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600,
+                          background: selectionMode === 'single' ? 'var(--gold)' : 'transparent',
+                          color: selectionMode === 'single' ? 'var(--bg-base)' : 'var(--text-secondary)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        Single Hall
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setSelectionMode('multiple')}
+                        style={{
+                          padding: '4px 10px', fontSize: '0.72rem', border: 'none', borderRadius: 4, cursor: 'pointer', fontWeight: 600,
+                          background: selectionMode === 'multiple' ? 'var(--gold)' : 'transparent',
+                          color: selectionMode === 'multiple' ? 'var(--bg-base)' : 'var(--text-secondary)',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        Multiple Halls
+                      </button>
+                    </div>
+                  </label>
+
+                  {/* Chips Grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 8, marginTop: 8 }}>
+                    {availableHalls.map(h => {
+                      const isSelected = selectedHallsList.includes(h.name);
+                      return (
+                        <div
+                          key={h.name}
+                          onClick={() => handleHallClick(h.name)}
+                          style={{
+                            background: isSelected ? 'var(--gold-faint)' : 'var(--bg-overlay)',
+                            border: isSelected ? '1px solid var(--gold)' : '1px solid var(--border)',
+                            borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
+                            display: 'flex', flexDirection: 'column', gap: 3
+                          }}
+                        >
+                          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: isSelected ? 'var(--gold)' : 'var(--text-primary)' }}>
+                            {h.name}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                            {h.areaSqm ? `${h.areaSqm} sqm` : '—'}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {errors.hall && <span style={{ fontSize: '0.72rem', color: '#F87171', marginTop: 4, display: 'block' }}>{errors.hall}</span>}
                 </div>
               </div>
 

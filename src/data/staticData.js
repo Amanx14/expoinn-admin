@@ -15,7 +15,7 @@ export const masterData = {
         { name: "Hall 2",  areaSqm: 6910, image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop" },
         { name: "Hall 3",  areaSqm: 5100, image: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1000&auto=format&fit=crop" },
         { name: "Hall 4",  areaSqm: 5020, image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?q=80&w=1000&auto=format&fit=crop" },
-        { name: "Hall 5",  areaSqm: 4830, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop" },
+        { name: "Hall 5",  areaSqm: 4830, image: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=1000&auto=format&fit=crop", notAvailable: true },
         { name: "Hall 6",  areaSqm: 4870, image: "https://images.unsplash.com/photo-1540575861501-7cf05a4b125a?q=80&w=1000&auto=format&fit=crop" },
         { name: "Hall 7",  areaSqm: 3800, image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?q=80&w=1000&auto=format&fit=crop" },
         { name: "Hall 8",  areaSqm: 3650, image: "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?q=80&w=1000&auto=format&fit=crop" },
@@ -149,6 +149,15 @@ export const initialBookings = [
     setupDate: "2026-05-20", eventStartDate: "2026-05-22",
     eventEndDate: "2026-05-25", dismantleDate: "2026-05-26", guests: 15000, revenue: 3200000,
   },
+  {
+    id: "b13", organizer: "Tech Corp", venueId: "v1", hall: "Hall 3",
+    eventName: "Cancelled Expo 2026",
+    industry: "Technology & IT", sectors: ["Software"], eventType: "Exhibition",
+    status: "Cancelled", availability: "Required",
+    setupDate: "2026-05-02", eventStartDate: "2026-05-04",
+    eventEndDate: "2026-05-06", dismantleDate: "2026-05-07", guests: 0, revenue: 0,
+  },
+
   {
     id: "b8", organizer: "Auto Expo Group", venueId: "v1", hall: "Hall 4",
     eventName: "Auto Expo 2026",

@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
-import { X, Maximize, Minimize } from 'lucide-react';
+import { X, Maximize, Minimize, Plus, CalendarPlus, CheckCircle2, Clock, Wrench, Ban } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -42,9 +43,7 @@ function getStatusClass(booking, date) {
   return 'cell-booked';
 }
 
-// ── Booking Detail Modal ──────────────────────────────────────────────────────
-
-function BookingDetailModal({ booking, onClose }) {
+function BookingDetailModal({ booking, onClose, onEdit, onCancel }) {
   if (!booking) return null;
   const venue = booking._venueName || '—';
 
@@ -113,7 +112,45 @@ function BookingDetailModal({ booking, onClose }) {
         </div>
 
         {/* Footer */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', padding: '14px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg-surface)' }}>
+          {booking.status !== 'Cancelled' && onCancel && (
+            <button
+              onClick={() => {
+                onCancel(booking.id);
+                onClose();
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 16px', border: '1px solid #EF4444', borderRadius: 8,
+                background: 'rgba(239,68,68,0.1)', color: '#FCA5A5', fontSize: '0.85rem',
+                fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', marginRight: 'auto'
+              }}
+              onMouseOver={e => e.currentTarget.style.background = 'rgba(239,68,68,0.2)'}
+              onMouseOut={e => e.currentTarget.style.background = 'rgba(239,68,68,0.1)'}
+            >
+              Cancel Booking
+            </button>
+          )}
+
+          {onEdit && (
+            <button
+              onClick={() => {
+                onEdit(booking);
+                onClose();
+              }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '8px 16px', border: '1px solid var(--gold)', borderRadius: 8,
+                background: 'rgba(201,168,76,0.1)', color: 'var(--gold)', fontSize: '0.85rem',
+                fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', marginRight: 10
+              }}
+              onMouseOver={e => e.currentTarget.style.background = 'rgba(201,168,76,0.2)'}
+              onMouseOut={e => e.currentTarget.style.background = 'rgba(201,168,76,0.1)'}
+            >
+              Edit Booking
+            </button>
+          )}
+
           <button
             onClick={onClose}
             style={{
@@ -139,11 +176,13 @@ const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 
 const YEARS = Array.from({ length: 10 }, (_, i) => 2024 + i);
 
 export default function CalendarView({ bookings, venues, onEditBooking, onUpdateStatus, isSidebarOpen, toggleSidebar }) {
+  const navigate = useNavigate();
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
   const [selectedVenueId, setSelectedVenueId] = useState(venues[0]?.id || '');
   const [detailBooking, setDetailBooking] = useState(null);
+  const [availableSlot, setAvailableSlot] = useState(null);
 
   const selectedVenue = useMemo(() => venues.find(v => v.id === selectedVenueId), [venues, selectedVenueId]);
   const halls = useMemo(() => selectedVenue?.halls || [], [selectedVenue]);
@@ -166,13 +205,20 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
       const s = toMidnight(b.setupDate || b.eventStartDate);
       const e = toMidnight(b.dismantleDate || b.eventEndDate);
       if (!s || !e) return;
-      const cur = new Date(s);
-      while (cur <= e) {
-        const key = `${cur.getFullYear()}-${cur.getMonth()}-${cur.getDate()}-${b.hall}`;
-        if (!map[key]) map[key] = [];
-        map[key].push(b);
-        cur.setDate(cur.getDate() + 1);
-      }
+      
+      const bookedHalls = typeof b.hall === 'string' 
+        ? b.hall.split(',').map(h => h.trim()).filter(Boolean)
+        : [b.hall];
+
+      bookedHalls.forEach(hallName => {
+        const cur = new Date(s);
+        while (cur <= e) {
+          const key = `${cur.getFullYear()}-${cur.getMonth()}-${cur.getDate()}-${hallName}`;
+          if (!map[key]) map[key] = [];
+          map[key].push(b);
+          cur.setDate(cur.getDate() + 1);
+        }
+      });
     });
     return map;
   }, [bookings, selectedVenueId]);
@@ -186,12 +232,27 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
 
   const styles = `
     .expo-cal-wrap {
+      --cal-bg: #071A24;
+      --cal-panel: #0B2430;
+      --cal-panel-soft: #123447;
+      --cal-header: #0E3A4A;
+      --cal-grid: rgba(148, 210, 189, 0.18);
+      --cal-grid-strong: rgba(148, 210, 189, 0.34);
+      --cal-text: #E7FAF8;
+      --cal-muted: #93B8B5;
+      --cal-accent: #2DD4BF;
+      --cal-accent-soft: rgba(45, 212, 191, 0.14);
+      --cal-booked: #E11D48;
+      --cal-mounting: #F97316;
+      --cal-reserved: #7C3AED;
+      --cal-available: #059669;
+      --cal-na: #475569;
       font-family: var(--font-body);
-      background: var(--bg-card);
+      background: var(--cal-bg);
       border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
+      border: 1px solid var(--cal-grid-strong);
       overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      box-shadow: 0 18px 46px rgba(0,0,0,0.28), 0 0 0 1px rgba(45,212,191,0.04);
       display: flex;
       flex-direction: column;
     }
@@ -200,38 +261,38 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
       align-items: center;
       gap: 24px;
       padding: 16px 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-overlay);
+      border-bottom: 1px solid var(--cal-grid-strong);
+      background: linear-gradient(135deg, var(--cal-header), #092231);
       flex-wrap: wrap;
     }
     .expo-cal-select {
       appearance: none;
-      border: 1px solid var(--border);
+      border: 1px solid var(--cal-grid-strong);
       border-radius: var(--radius-sm);
       padding: 6px 28px 6px 10px;
       font-size: 0.85rem;
       font-weight: 600;
-      background: var(--bg-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A8F7A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+      background: var(--cal-panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2393B8B5' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
       cursor: pointer;
-      color: var(--gold);
+      color: var(--cal-accent);
       outline: none;
     }
-    .expo-cal-select-year { color: var(--gold); }
+    .expo-cal-select-year { color: var(--cal-accent); }
     .expo-legend {
       display: flex;
       align-items: center;
       gap: 20px;
       flex-wrap: wrap;
       padding: 12px 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-card);
+      border-bottom: 1px solid var(--cal-grid);
+      background: var(--cal-panel);
     }
     .expo-legend-item {
       display: flex;
       align-items: center;
       gap: 7px;
       font-size: 0.78rem;
-      color: var(--text-secondary);
+      color: var(--cal-muted);
     }
     .expo-legend-dot {
       width: 14px;
@@ -242,7 +303,7 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
     .expo-legend-box {
       width: 14px;
       height: 14px;
-      border: 2px solid var(--border);
+      border: 2px solid var(--cal-grid-strong);
       flex-shrink: 0;
     }
     .expo-cal-scroll {
@@ -255,12 +316,12 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
       font-size: 0.78rem;
     }
     .expo-cal-table th {
-      background: var(--bg-surface);
-      color: var(--text-primary);
+      background: var(--cal-panel);
+      color: var(--cal-text);
       font-weight: 600;
       padding: 10px 8px;
       text-align: center;
-      border: 1px solid var(--border);
+      border: 1px solid var(--cal-grid);
       white-space: nowrap;
       position: sticky;
       top: 0;
@@ -276,30 +337,30 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
       z-index: 3;
     }
     .expo-cal-table td {
-      border: 1px solid var(--border);
+      border: 1px solid var(--cal-grid);
       padding: 0;
       text-align: center;
     }
     .expo-cal-table td.date-cell {
-      background: var(--bg-surface);
+      background: var(--cal-panel);
       padding: 6px 10px;
       font-size: 0.78rem;
-      color: var(--text-secondary);
+      color: var(--cal-muted);
       white-space: nowrap;
       min-width: 70px;
       width: 70px;
       position: sticky;
       left: 0;
       z-index: 1;
-      border-right: 2px solid var(--border-gold);
+      border-right: 2px solid var(--cal-grid-strong);
     }
     .expo-cal-table td.date-cell.today {
-      background: rgba(201,168,76,0.1);
+      background: var(--cal-accent-soft);
       font-weight: 700;
-      color: var(--gold);
+      color: var(--cal-accent);
     }
-    .expo-cal-table tr:hover td.date-cell { background: var(--bg-overlay); }
-    .expo-cal-table tr.today-row { background: rgba(201,168,76,0.05); }
+    .expo-cal-table tr:hover td.date-cell { background: var(--cal-panel-soft); }
+    .expo-cal-table tr.today-row { background: rgba(45, 212, 191, 0.06); }
 
     .hall-cell {
       width: 54px;
@@ -311,43 +372,45 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
       align-items: center;
       justify-content: center;
     }
-    .hall-cell:hover { filter: brightness(1.12); }
+    .hall-cell:hover { filter: brightness(1.14) saturate(1.08); }
 
-    .cell-available   { background: #10B981; }
-    .cell-booked      { background: #EF4444; }
-    .cell-mounting    { background: #EC4899; }
-    .cell-reserved    { background: #F59E0B; }
-    .cell-na          { background: #4B5563; }
+    .cell-available   { background: var(--cal-available); color: #ffffff; }
+    .cell-booked      { background: var(--cal-booked); color: #ffffff; }
+    .cell-mounting    { background: var(--cal-mounting); color: #ffffff; }
+    .cell-reserved    { background: var(--cal-reserved); color: #ffffff; }
+    .cell-na          { background: var(--cal-na); color: #ffffff; }
 
     .cell-icon {
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255,255,255,0.9);
+      color: #ffffff;
+      width: 100%;
+      height: 100%;
     }
 
-    /* Hall column tds: zero padding so color fills edge-to-edge */
+    /* Hall column tds: zero padding so color fills edge-to-edge with strong visible borders */
     .expo-cal-table td.hall-td {
       padding: 0;
       height: 36px;
       vertical-align: middle;
-      border: 2px solid rgba(255,255,255) !important;
+      border: 2px solid rgba(231, 250, 248, 0.78) !important;
       cursor: pointer;
     }
     .expo-cal-table td.hall-td:hover {
-      filter: brightness(1.12);
+      filter: brightness(1.14) saturate(1.08);
     }
 
     .area-row td {
-      background: var(--bg-overlay);
-      color: var(--text-secondary);
+      background: #0A202C;
+      color: var(--cal-muted);
       font-size: 0.72rem;
       padding: 5px 8px;
       text-align: center;
     }
     .area-row td.date-cell {
-      background: var(--bg-surface);
-      color: var(--text-secondary);
+      background: var(--cal-panel);
+      color: var(--cal-muted);
       font-size: 0.72rem;
     }
     .venue-select-wrap {
@@ -358,18 +421,18 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
     }
     .venue-select-wrap label {
       font-size: 0.8rem;
-      color: var(--text-secondary);
+      color: var(--cal-muted);
       font-weight: 500;
     }
     .venue-select {
       appearance: none;
-      border: 1px solid var(--border);
+      border: 1px solid var(--cal-grid-strong);
       border-radius: var(--radius-sm);
       padding: 6px 28px 6px 10px;
       font-size: 0.82rem;
-      background: var(--bg-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239A8F7A' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
+      background: var(--cal-panel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2393B8B5' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 8px center;
       cursor: pointer;
-      color: var(--text-primary);
+      color: var(--cal-text);
       outline: none;
     }
   `;
@@ -419,8 +482,8 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
               >
                 {venues.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
               </select>
-              
-              <button 
+
+              <button
                 onClick={toggleSidebar}
                 style={{
                   background: 'transparent', border: '1px solid var(--border)', borderRadius: 6,
@@ -439,15 +502,55 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
           {/* ── Legend ── */}
           <div className="expo-legend">
             {[
-              { color: '#EF4444', label: 'Booked-Exhibition', dot: true },
-              { color: '#EC4899', label: 'Booked-Mounting / Dismantling', dot: true },
-              { color: '#F59E0B', label: 'Reserved / Booking in Progress', dot: true },
-              { color: '#10B981', label: 'Available', dot: true },
-              { color: '#4B5563', label: 'Not Available', dot: true },
-            ].map(({ color, label, dot }) => (
-              <div key={label} className="expo-legend-item">
-                <div className="expo-legend-dot" style={{ background: color }} />
-                {label}
+              {
+                bg: '#C23B30',
+                txt: '#ffffff',
+                label: 'Booked - Exhibition',
+                icon: <CheckCircle2 size={11} strokeWidth={2.5} />
+              },
+              {
+                bg: '#D15E84',
+                txt: '#ffffff',
+                label: 'Booked - Mounting / Dismantling',
+                icon: <Wrench size={11} strokeWidth={2.5} />
+              },
+              {
+                bg: '#C9A84C',
+                txt: '#ffffff',
+                label: 'Reserved / Booking in Progress',
+                icon: <Clock size={11} strokeWidth={2.5} />
+              },
+              {
+                bg: '#1B8A5A',
+                txt: '#ffffff',
+                label: 'Available',
+                icon: <Plus size={11} strokeWidth={3} />
+              },
+              {
+                bg: '#2D394E',
+                txt: '#ffffff',
+                label: 'Not Available',
+                icon: <Ban size={11} strokeWidth={2.5} />
+              },
+            ].map(({ bg, txt, label, icon }) => (
+              <div key={label} className="expo-legend-item" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div
+                  className="expo-legend-dot"
+                  style={{
+                    background: bg,
+                    color: txt,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 22,
+                    height: 22,
+                    borderRadius: 6,
+                    border: '1px solid var(--border)'
+                  }}
+                >
+                  {icon}
+                </div>
+                <span style={{ fontSize: '0.8rem', fontWeight: 500 }}>{label}</span>
               </div>
             ))}
           </div>
@@ -474,43 +577,48 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
                         {date.getDate()} {date.toLocaleDateString('en-IN', { month: 'short' })}
                       </td>
                       {halls.map(hall => {
-                        const cellBookings = getCell(date, hall.name).filter(
-                          b => !['cancelled', 'completed'].includes((b.status || '').toLowerCase())
-                        );
+                        const cellBookings = getCell(date, hall.name);
                         const hasBooking = cellBookings.length > 0;
                         const booking = cellBookings[0];
                         let cellClass = 'cell-available';
-                        let showEye = false;
+                        let IconComponent = null;
 
                         if (hasBooking) {
                           cellClass = getStatusClass(booking, date);
-                          showEye = cellClass === 'cell-booked';
+                          if (cellClass === 'cell-booked') IconComponent = <CheckCircle2 size={13} strokeWidth={2.5} />;
+                          else if (cellClass === 'cell-reserved') IconComponent = <Clock size={13} strokeWidth={2.5} />;
+                          else if (cellClass === 'cell-mounting') IconComponent = <Wrench size={13} strokeWidth={2.5} />;
+                          else if (cellClass === 'cell-na') IconComponent = <Ban size={13} strokeWidth={2.5} />;
                         } else if (hall.notAvailable) {
                           cellClass = 'cell-na';
+                          IconComponent = <Ban size={13} strokeWidth={2.5} />;
+                        } else {
+                          IconComponent = <Plus size={13} strokeWidth={3} />;
                         }
 
                         return (
                           <td
                             key={hall.name}
                             className={`hall-td ${cellClass}`}
-                            title={hasBooking ? `${booking.eventName || booking.organizer} · ${booking.status}` : 'Available'}
+                            title={hasBooking ? `${booking.eventName || booking.organizer} · ${booking.status}` : hall.notAvailable ? 'Not Available' : 'Available'}
                             onClick={() => {
                               if (hasBooking) {
                                 setDetailBooking({
                                   ...booking,
                                   _venueName: selectedVenue?.name,
                                 });
+                              } else if (!hall.notAvailable) {
+                                setAvailableSlot({
+                                  date,
+                                  hall,
+                                  venue: selectedVenue
+                                });
                               }
                             }}
                           >
-                            {showEye && (
-                              <div className="cell-icon">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                                  <circle cx="12" cy="12" r="3" />
-                                </svg>
-                              </div>
-                            )}
+                            <div className="cell-icon">
+                              {IconComponent}
+                            </div>
                           </td>
                         );
                       })}
@@ -541,7 +649,94 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
       <BookingDetailModal
         booking={detailBooking}
         onClose={() => setDetailBooking(null)}
+        onEdit={onEditBooking}
+        onCancel={(id) => onUpdateStatus(id, 'Cancelled')}
       />
+
+      {/* Available Slot Modal */}
+      {availableSlot && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.65)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+          onClick={() => setAvailableSlot(null)}
+        >
+          <div
+            style={{
+              background: 'var(--bg-card)', borderRadius: 12, maxWidth: 400, width: '90%',
+              border: '1px solid var(--border)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.4)', overflow: 'hidden',
+              fontFamily: 'var(--font-body)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border)' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: 4 }}>
+                Available Slot
+              </div>
+              <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 700, color: 'var(--text-primary)' }}>
+                {availableSlot.hall.name}
+              </h2>
+            </div>
+
+            <div style={{ padding: '20px 24px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 2 }}>Venue</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>{availableSlot.venue.name}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 2 }}>Area Size</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>{availableSlot.hall.areaSqm ? `${availableSlot.hall.areaSqm} sqm` : 'Not specified'}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 2 }}>Date</div>
+                  <div style={{ fontSize: '0.95rem', fontWeight: 500, color: 'var(--text-primary)' }}>{fmtDate(availableSlot.date)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border)', background: 'var(--bg-surface)', display: 'flex', gap: 12 }}>
+              <button
+                onClick={() => setAvailableSlot(null)}
+                style={{
+                  flex: 1, padding: '10px', border: '1px solid var(--border)', borderRadius: 8,
+                  background: 'var(--bg-card)', color: 'var(--text-primary)', fontSize: '0.85rem',
+                  fontWeight: 500, cursor: 'pointer',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // Format date to YYYY-MM-DD local time to pass to form
+                  const tzoffset = availableSlot.date.getTimezoneOffset() * 60000; // offset in milliseconds
+                  const localISOTime = (new Date(availableSlot.date - tzoffset)).toISOString().slice(0, -1);
+                  const dateString = localISOTime.split('T')[0];
+
+                  navigate('/bookings/new', {
+                    state: {
+                      venueId: availableSlot.venue.id,
+                      hall: availableSlot.hall.name,
+                      date: dateString
+                    }
+                  });
+                }}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: '10px', border: 'none', borderRadius: 8,
+                  background: 'var(--gold)', color: 'var(--bg-base)', fontSize: '0.85rem',
+                  fontWeight: 600, cursor: 'pointer',
+                }}
+              >
+                <CalendarPlus size={16} /> Book Directly
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
