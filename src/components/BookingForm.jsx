@@ -143,29 +143,35 @@ export default function BookingForm({
         : [...prev.sectors, sector];
       return { ...prev, sectors: newSectors };
     });
+    if (errors.sectors) setErrors(prev => ({ ...prev, sectors: '' }));
   };
 
   const validate = () => {
     const newErrors = {};
     if (!formData.eventName) newErrors.eventName = 'Event name is required';
+    if (!formData.setupDate) newErrors.setupDate = 'Setup date is required';
     if (!formData.eventStartDate) newErrors.eventStartDate = 'Start date is required';
     if (!formData.eventEndDate) newErrors.eventEndDate = 'End date is required';
+    if (!formData.dismantleDate) newErrors.dismantleDate = 'Dismantle date is required';
     if (!formData.venueId) newErrors.venueId = 'Venue is required';
-    if (!formData.hall) newErrors.hall = 'Hall is required';
+    if (!formData.hall) newErrors.hall = 'Hall selection is required';
+    if (!formData.sectors || formData.sectors.length === 0) newErrors.sectors = 'Please select at least one sector';
+    if (!formData.revenue || Number(formData.revenue) <= 0) newErrors.revenue = 'Estimated revenue must be greater than 0';
+    if (!formData.guests || Number(formData.guests) <= 0) newErrors.guests = 'Expected guests must be greater than 0';
 
     // Date logic: Setup <= Event Start <= Event End <= Dismantle
     const setup = formData.setupDate ? new Date(formData.setupDate) : null;
-    const eventS = new Date(formData.eventStartDate);
-    const eventE = new Date(formData.eventEndDate);
+    const eventS = formData.eventStartDate ? new Date(formData.eventStartDate) : null;
+    const eventE = formData.eventEndDate ? new Date(formData.eventEndDate) : null;
     const dismantle = formData.dismantleDate ? new Date(formData.dismantleDate) : null;
 
-    if (eventS > eventE) {
+    if (eventS && eventE && eventS > eventE) {
       newErrors.eventEndDate = 'Event end cannot be before event start';
     }
-    if (setup && setup > eventS) {
+    if (setup && eventS && setup > eventS) {
       newErrors.setupDate = 'Setup cannot be after event start';
     }
-    if (dismantle && dismantle < eventE) {
+    if (dismantle && eventE && dismantle < eventE) {
       newErrors.dismantleDate = 'Dismantle cannot be before event end';
     }
 
@@ -268,7 +274,7 @@ export default function BookingForm({
 
               <div className="form-group">
                 <label className="form-label">Sectors</label>
-                <div className="sectors-chip-grid">
+                <div className="sectors-chip-grid" style={{ border: errors.sectors ? '1px dashed #F87171' : 'none', borderRadius: 8, padding: errors.sectors ? '6px' : '0' }}>
                   {sectors.map(s => (
                     <div 
                       key={s} 
@@ -279,6 +285,7 @@ export default function BookingForm({
                     </div>
                   ))}
                 </div>
+                {errors.sectors && <span style={{ fontSize: '0.72rem', color: '#F87171', marginTop: 6, display: 'block' }}>{errors.sectors}</span>}
               </div>
             </div>
 
@@ -370,22 +377,22 @@ export default function BookingForm({
               <div className="section-title"><Calendar size={12} /> Event Schedule</div>
               <div className="date-range-row">
                 <div className="range-label">Setup</div>
-                <input type="date" className="form-input" name="setupDate" value={formData.setupDate} onChange={handleChange} />
+                <input type="date" className={`form-input ${errors.setupDate ? 'error' : ''}`} name="setupDate" value={formData.setupDate} onChange={handleChange} />
               </div>
               {errors.setupDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.setupDate}</div>}
               <div className="date-range-row">
                 <div className="range-label" style={{ color: 'var(--gold)' }}>Event Live</div>
                 <div className="range-inputs">
-                  <input type="date" className="form-input" name="eventStartDate" value={formData.eventStartDate} onChange={handleChange} />
+                  <input type="date" className={`form-input ${errors.eventStartDate ? 'error' : ''}`} name="eventStartDate" value={formData.eventStartDate} onChange={handleChange} />
                   <span className="range-sep">➜</span>
-                  <input type="date" className="form-input" name="eventEndDate" value={formData.eventEndDate} onChange={handleChange} />
+                  <input type="date" className={`form-input ${errors.eventEndDate ? 'error' : ''}`} name="eventEndDate" value={formData.eventEndDate} onChange={handleChange} />
                 </div>
               </div>
               {errors.eventStartDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.eventStartDate}</div>}
               {errors.eventEndDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.eventEndDate}</div>}
               <div className="date-range-row">
                 <div className="range-label">Dismantle</div>
-                <input type="date" className="form-input" name="dismantleDate" value={formData.dismantleDate} onChange={handleChange} />
+                <input type="date" className={`form-input ${errors.dismantleDate ? 'error' : ''}`} name="dismantleDate" value={formData.dismantleDate} onChange={handleChange} />
               </div>
               {errors.dismantleDate && <div style={{ fontSize: '0.72rem', color: '#F87171', marginBottom: 8, paddingLeft: 106 }}>{errors.dismantleDate}</div>}
             </div>
@@ -409,11 +416,25 @@ export default function BookingForm({
               </div>
               <div className="form-group" style={{ marginBottom: 16 }}>
                 <label className="form-label">Est. Revenue (₹)</label>
-                <input type="number" className="form-input" name="revenue" value={formData.revenue} onChange={handleChange} />
+                <input 
+                  type="number" 
+                  className={`form-input ${errors.revenue ? 'error' : ''}`} 
+                  name="revenue" 
+                  value={formData.revenue} 
+                  onChange={handleChange} 
+                />
+                {errors.revenue && <span style={{ fontSize: '0.72rem', color: '#F87171', marginTop: 4, display: 'block' }}>{errors.revenue}</span>}
               </div>
               <div className="form-group" style={{ marginBottom: 24 }}>
                 <label className="form-label">Expected Guests</label>
-                <input type="number" className="form-input" name="guests" value={formData.guests} onChange={handleChange} />
+                <input 
+                  type="number" 
+                  className={`form-input ${errors.guests ? 'error' : ''}`} 
+                  name="guests" 
+                  value={formData.guests} 
+                  onChange={handleChange} 
+                />
+                {errors.guests && <span style={{ fontSize: '0.72rem', color: '#F87171', marginTop: 4, display: 'block' }}>{errors.guests}</span>}
               </div>
 
               {errors.conflict && (
