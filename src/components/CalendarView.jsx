@@ -492,11 +492,11 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
             borderBottom: '1px solid var(--border)',
             background: 'var(--bg-card)',
           }}>
-            <LegendPill color="#DC2626" label="Booked — Exhibition" icon={<CheckCircle2 size={12} color="#fff" strokeWidth={2.5} />} />
-            <LegendPill color="#D97706" label="Mounting / Dismantling" icon={<Wrench size={12} color="#fff" strokeWidth={2.5} />} />
-            <LegendPill color="#7C3AED" label="Reserved / In Progress" icon={<Clock size={12} color="#fff" strokeWidth={2.5} />} />
-            <LegendPill color="#3B82F6" bgColor="#16294A" label="Available" icon={<Plus size={12} color="#60A5FA" strokeWidth={3} />} />
-            <LegendPill color="#475569" bgColor="#223047" label="Not Available" icon={<Ban size={12} color="#64748B" strokeWidth={2.5} />} />
+            <LegendPill color={CELL_COLORS['cn-booked'].accent} bgColor={CELL_COLORS['cn-booked'].bg} label="Booked — Exhibition" icon={<CheckCircle2 size={12} color="#fff" strokeWidth={2.5} />} />
+            <LegendPill color={CELL_COLORS['cn-mounting'].accent} bgColor={CELL_COLORS['cn-mounting'].bg} label="Mounting / Dismantling" icon={<Wrench size={12} color="#fff" strokeWidth={2.5} />} />
+            <LegendPill color={CELL_COLORS['cn-reserved'].accent} bgColor={CELL_COLORS['cn-reserved'].bg} label="Reserved / In Progress" icon={<Clock size={12} color="#fff" strokeWidth={2.5} />} />
+            <LegendPill color={CELL_COLORS['cn-available'].accent} bgColor={CELL_COLORS['cn-available'].bg} label="Available" icon={<Plus size={12} color={isLightTheme ? CELL_COLORS['cn-available'].text : '#60A5FA'} strokeWidth={3} />} />
+            <LegendPill color={CELL_COLORS['cn-na'].accent} bgColor={CELL_COLORS['cn-na'].bg} label="Not Available" icon={<Ban size={12} color={isLightTheme ? CELL_COLORS['cn-na'].text : '#64748B'} strokeWidth={2.5} />} />
           </div>
 
           {/* ── Table ── */}

@@ -59,7 +59,7 @@ function AdminShell({ page, onNav, onAddClick, currentUser, isSidebarOpen, theme
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('theme') || 'dark';
+    return localStorage.getItem('theme') || 'light';
   });
 
   useEffect(() => {
