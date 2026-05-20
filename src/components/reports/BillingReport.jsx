@@ -60,9 +60,9 @@ export default function BillingReport({ bookings, venues }) {
               ]}
               margin={{ top:5, right:10, bottom:0, left:-18 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis dataKey="status" tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="status" tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="value" name="Revenue (Rs L)" radius={[4,4,0,0]}>
                 <Cell fill="#A5B4FC" /><Cell fill="#4ADE80" /><Cell fill="#FBBF24" />

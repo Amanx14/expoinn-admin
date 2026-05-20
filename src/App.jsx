@@ -44,12 +44,12 @@ const routeConfig = {
   users:        '/users',
 };
 
-function AdminShell({ page, onNav, onAddClick, currentUser, isSidebarOpen, children }) {
+function AdminShell({ page, onNav, onAddClick, currentUser, isSidebarOpen, theme, toggleTheme, children }) {
   return (
     <div className="app-shell" data-route={routeConfig[page] || routeConfig[DEFAULT_ROUTE]}>
       {isSidebarOpen && <Sidebar active={page} onNav={onNav} currentUser={currentUser} />}
       <div className="main-content" style={{ marginLeft: isSidebarOpen ? '240px' : '0', transition: 'margin-left 0.2s' }}>
-        <Topbar page={page} onNav={onNav} onAddClick={onAddClick} />
+        <Topbar page={page} onNav={onNav} onAddClick={onAddClick} theme={theme} toggleTheme={toggleTheme} />
         {children}
       </div>
     </div>
@@ -58,6 +58,18 @@ function AdminShell({ page, onNav, onAddClick, currentUser, isSidebarOpen, child
 
 export default function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('theme') || 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  };
 
   const getFromLocalStorage = (key, defaultValue) => {
     const saved = localStorage.getItem(key);
@@ -196,14 +208,14 @@ export default function App() {
   };
 
   return (
-    <AdminShell page={activePage} onNav={navigateTo} onAddClick={handleAddClick} currentUser={currentUser} isSidebarOpen={isSidebarOpen}>
+    <AdminShell page={activePage} onNav={navigateTo} onAddClick={handleAddClick} currentUser={currentUser} isSidebarOpen={isSidebarOpen} theme={theme} toggleTheme={toggleTheme}>
       <Routes>
         <Route path="/" element={<Navigate to={routeConfig[DEFAULT_ROUTE]} replace />} />
 
         {/* Core pages */}
         <Route path="/dashboard" element={<Dashboard bookings={bookings} venues={venues} onNav={navigateTo} onUpdateStatus={updateBookingStatus} currentUser={currentUser} />} />
         <Route path="/venues"    element={<Venues venues={venues} />} />
-        <Route path="/calendar"  element={<CalendarView bookings={bookings} venues={venues} onEditBooking={startEditBooking} onUpdateStatus={updateBookingStatus} isSidebarOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(prev => !prev)} />} />
+        <Route path="/calendar"  element={<CalendarView bookings={bookings} venues={venues} onEditBooking={startEditBooking} onUpdateStatus={updateBookingStatus} isSidebarOpen={isSidebarOpen} toggleSidebar={() => setIsSidebarOpen(prev => !prev)} theme={theme} />} />
         <Route path="/bookings"  element={<BookingsList bookings={bookings} venues={venues} industries={industries} onNav={navigateTo} onUpdateStatus={updateBookingStatus} onEditBooking={startEditBooking} onDeleteBooking={deleteBooking} />} />
         <Route path="/bookings/new"  element={<BookingForm bookings={bookings} venues={venues} organizers={organizers} industries={industries} sectors={sectors} eventTypes={eventTypes} eventStatuses={eventStatuses} onSave={addBooking} />} />
         <Route path="/bookings/edit" element={<BookingForm bookings={bookings} venues={venues} organizers={organizers} industries={industries} sectors={sectors} eventTypes={eventTypes} eventStatuses={eventStatuses} onSave={updateBooking} editBooking={editingBooking} />} />

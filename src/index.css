@@ -35,6 +35,38 @@
   --radius-xl:  22px;
   --shadow-gold: 0 0 30px rgba(201,168,76,0.08);
   --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  --modal-backdrop: rgba(5, 8, 15, 0.85);
+}
+
+[data-theme="light"] {
+  --bg-base:        #F5F7FF;
+  --bg-surface:     #ECEEF8;
+  --bg-card:        #FFFFFF;
+  --bg-card-hover:  #F0F2FC;
+  --bg-overlay:     #E4E7F5;
+  --gold:           #4F46E5;
+  --gold-light:     #6366F1;
+  --gold-dim:       #3730A3;
+  --gold-faint:     rgba(79, 70, 229, 0.07);
+  --gold-border:    rgba(79, 70, 229, 0.16);
+  --cream:          #1E1B4B;
+  --text-primary:   #1E1B4B;
+  --text-secondary: #4C4679;
+  --text-muted:     #8B85AD;
+  --border:         rgba(30, 27, 75, 0.08);
+  --border-gold:    rgba(79, 70, 229, 0.20);
+  --status-tentative-bg:  rgba(217, 119, 6, 0.10);
+  --status-tentative-txt: #B45309;
+  --status-confirmed-bg:  rgba(22, 163, 74, 0.10);
+  --status-confirmed-txt: #15803D;
+  --status-cancelled-bg:  rgba(220, 38, 38, 0.08);
+  --status-cancelled-txt: #B91C1C;
+  --status-completed-bg:  rgba(79, 70, 229, 0.10);
+  --status-completed-txt: #4338CA;
+  --status-draft-bg:      rgba(75, 85, 99, 0.10);
+  --status-draft-txt:     #4B5563;
+  --shadow-gold: 0 4px 24px rgba(79, 70, 229, 0.08);
+  --modal-backdrop: rgba(30, 27, 75, 0.35);
 }
 
 html { font-size: 15px; }
@@ -46,6 +78,7 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
@@ -70,6 +103,7 @@ body {
   height: 100vh;
   z-index: 100;
   overflow: hidden;
+  transition: background-color 0.35s ease, border-color 0.35s ease;
 }
 
 .sidebar-logo {
@@ -212,6 +246,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 50;
+  transition: background-color 0.35s ease, border-color 0.35s ease;
 }
 
 .topbar-title {
@@ -622,7 +657,7 @@ body {
 
 .hall-card-img {
   height: 110px;
-  background: linear-gradient(135deg, #1A2535, #0D1521);
+  background: linear-gradient(135deg, var(--bg-overlay), var(--bg-surface));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -890,7 +925,7 @@ body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(5, 8, 15, 0.85);
+  background: var(--modal-backdrop);
   backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
@@ -1107,7 +1142,7 @@ body {
 }
 
 .resource-cal-cell:hover {
-  background: rgba(255,255,255,0.02);
+  background: var(--bg-card-hover);
 }
 
 .event-block {

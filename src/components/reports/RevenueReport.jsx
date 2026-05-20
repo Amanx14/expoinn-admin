@@ -37,7 +37,7 @@ export default function RevenueReport({ bookings, venues }) {
                 <Pie data={computed.industrySeries} cx="50%" cy="50%" innerRadius={52} outerRadius={84} paddingAngle={2} dataKey="revenueLakhs" nameKey="name">
                   {computed.industrySeries.map(e => <Cell key={e.name} fill={e.color} />)}
                 </Pie>
-                <Legend formatter={v => <span style={{ fontSize:10, color:'#9A8F7A' }}>{v}</span>} iconSize={6} />
+                <Legend formatter={v => <span style={{ fontSize:10, color:'var(--text-secondary)' }}>{v}</span>} iconSize={6} />
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
@@ -50,11 +50,11 @@ export default function RevenueReport({ bookings, venues }) {
           <div style={{ height:240 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={computed.dateRevenue} margin={{ top:5, right:10, bottom:0, left:-18 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="month" tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="revenueLakhs" name="Revenue (Rs L)" fill="#C9A84C" radius={[4,4,0,0]} />
+                <Bar dataKey="revenueLakhs" name="Revenue (Rs L)" fill="var(--gold)" radius={[4,4,0,0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -86,7 +86,7 @@ export default function RevenueReport({ bookings, venues }) {
             cells: [
               <strong>{item.name}</strong>, item.bookings,
               <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                <div style={{ width:60, height:5, borderRadius:3, background:'rgba(255,255,255,0.08)' }}>
+                <div style={{ width:60, height:5, borderRadius:3, background:'var(--bg-overlay)', border:'1px solid var(--border)' }}>
                   <div style={{ width:`${item.marketShare}%`, height:'100%', borderRadius:3, background:'var(--gold)' }} />
                 </div>
                 <span style={{ color:'var(--gold)' }}>{item.marketShare}%</span>

@@ -10,10 +10,10 @@ export const MONTH_LABELS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Se
 export const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div style={{ background:'#111927', border:'1px solid rgba(201,168,76,0.3)', borderRadius:8, padding:'10px 14px', fontSize:12 }}>
-      <div style={{ color:'#C9A84C', fontWeight:600, marginBottom:4 }}>{label}</div>
+    <div style={{ background:'var(--bg-card)', border:'1px solid var(--gold-border)', borderRadius:8, padding:'10px 14px', fontSize:12, boxShadow: 'var(--shadow-gold)' }}>
+      <div style={{ color:'var(--gold)', fontWeight:600, marginBottom:4 }}>{label}</div>
       {payload.map((item, i) => (
-        <div key={i} style={{ color:'#F0E8D4' }}>
+        <div key={i} style={{ color:'var(--text-primary)' }}>
           {item.name}: {typeof item.value === 'number' ? item.value.toLocaleString('en-IN') : item.value}
         </div>
       ))}
@@ -83,7 +83,7 @@ export function ReportTable({ headers, rows, emptyText = 'No records match the c
 export function OccupancyBar({ pct, color = 'var(--gold)' }) {
   return (
     <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-      <div style={{ flex:1, minWidth:80, height:6, borderRadius:3, background:'rgba(255,255,255,0.08)' }}>
+      <div style={{ flex:1, minWidth:80, height:6, borderRadius:3, background:'var(--bg-overlay)', border:'1px solid var(--border)' }}>
         <div style={{ width:`${Math.min(100, pct)}%`, height:'100%', borderRadius:3, background:color, transition:'width 0.4s' }} />
       </div>
       <span style={{ width:38, color:'var(--gold)', fontWeight:600, fontSize:'0.8rem' }}>{pct}%</span>
@@ -94,7 +94,7 @@ export function OccupancyBar({ pct, color = 'var(--gold)' }) {
 export function InsightBox({ icon: Icon, color, title, value, sub }) {
   return (
     <div style={{
-      background:'rgba(255,255,255,0.03)', border:'1px solid rgba(255,255,255,0.07)',
+      background:'var(--bg-overlay)', border:'1px solid var(--border)',
       borderRadius:8, padding:'14px 18px', display:'flex', alignItems:'flex-start', gap:12,
     }}>
       <div style={{ marginTop:2, color }}>

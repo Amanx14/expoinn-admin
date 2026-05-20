@@ -29,9 +29,9 @@ export default function DemandReport({ bookings, venues }) {
           <div style={{ height:240 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={computed.demandChartData} margin={{ top:5, right:10, bottom:0, left:-18 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="type" tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="type" tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="bookings" name="Bookings" radius={[4,4,0,0]}>
                   <Cell fill="#F87171" /><Cell fill="#4ADE80" />
@@ -41,7 +41,7 @@ export default function DemandReport({ bookings, venues }) {
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginTop:16 }}>
             {computed.demandSeries.map(d => (
-              <div key={d.type} style={{ background:'rgba(255,255,255,0.03)', borderRadius:6, padding:'10px 14px', border:'1px solid rgba(255,255,255,0.06)' }}>
+              <div key={d.type} style={{ background:'var(--bg-overlay)', borderRadius:6, padding:'10px 14px', border:'1px solid var(--border)' }}>
                 <DemandBadge type={d.type.includes('High') ? 'HD' : 'LD'} />
                 <div style={{ fontWeight:700, fontSize:'1.2rem', color:'var(--text-primary)', marginTop:6 }}>{d.bookings}</div>
                 <div style={{ fontSize:'0.72rem', color:'var(--text-muted)' }}>bookings</div>
@@ -78,7 +78,7 @@ export default function DemandReport({ bookings, venues }) {
                       <stop offset="95%" stopColor="#6B9EC9" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="month" tick={{ fill:'#5A5248', fontSize:9 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="month" tick={{ fill:'var(--text-muted)', fontSize:9 }} axisLine={false} tickLine={false} />
                   <YAxis tick={false} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="bookings" name="Bookings" stroke="#6B9EC9" strokeWidth={1.5} fill="url(#demandGrad)" />

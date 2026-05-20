@@ -154,7 +154,18 @@ export default function BookingForm({
     if (!formData.eventEndDate) newErrors.eventEndDate = 'End date is required';
     if (!formData.dismantleDate) newErrors.dismantleDate = 'Dismantle date is required';
     if (!formData.venueId) newErrors.venueId = 'Venue is required';
-    if (!formData.hall) newErrors.hall = 'Hall selection is required';
+    if (!formData.hall) {
+      newErrors.hall = 'Hall selection is required';
+    } else if (formData.venueId) {
+      const venue = venues.find(v => v.id === formData.venueId);
+      if (venue) {
+        const selectedNames = formData.hall.split(',').map(h => h.trim()).filter(Boolean);
+        const naHallsSelected = venue.halls.filter(h => h.notAvailable && selectedNames.includes(h.name));
+        if (naHallsSelected.length > 0) {
+          newErrors.hall = `Selected hall is marked as Not Available: ${naHallsSelected.map(h => h.name).join(', ')}`;
+        }
+      }
+    }
     if (!formData.sectors || formData.sectors.length === 0) newErrors.sectors = 'Please select at least one sector';
     if (!formData.revenue || Number(formData.revenue) <= 0) newErrors.revenue = 'Estimated revenue must be greater than 0';
     if (!formData.guests || Number(formData.guests) <= 0) newErrors.guests = 'Expected guests must be greater than 0';
@@ -343,19 +354,25 @@ export default function BookingForm({
                       return (
                         <div
                           key={h.name}
-                          onClick={() => handleHallClick(h.name)}
-                          style={{
-                            background: isSelected ? 'var(--gold-faint)' : 'var(--bg-overlay)',
-                            border: isSelected ? '1px solid var(--gold)' : '1px solid var(--border)',
-                            borderRadius: 8, padding: '8px 12px', cursor: 'pointer', textAlign: 'center', transition: 'all 0.2s',
-                            display: 'flex', flexDirection: 'column', gap: 3
+                          onClick={() => {
+                            if (!h.notAvailable) handleHallClick(h.name);
                           }}
+                          style={{
+                            background: h.notAvailable ? 'var(--bg-surface)' : (isSelected ? 'var(--gold-faint)' : 'var(--bg-overlay)'),
+                            border: h.notAvailable ? '1px dashed rgba(239, 68, 68, 0.25)' : (isSelected ? '1px solid var(--gold)' : '1px solid var(--border)'),
+                            borderRadius: 8, padding: '8px 12px', 
+                            cursor: h.notAvailable ? 'not-allowed' : 'pointer', 
+                            textAlign: 'center', transition: 'all 0.2s',
+                            display: 'flex', flexDirection: 'column', gap: 3,
+                            opacity: h.notAvailable ? 0.45 : 1
+                          }}
+                          title={h.notAvailable ? 'This hall is currently marked as Not Available' : ''}
                         >
-                          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: isSelected ? 'var(--gold)' : 'var(--text-primary)' }}>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 600, color: h.notAvailable ? 'var(--text-muted)' : (isSelected ? 'var(--gold)' : 'var(--text-primary)') }}>
                             {h.name}
                           </div>
                           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
-                            {h.areaSqm ? `${h.areaSqm} sqm` : '—'}
+                            {h.notAvailable ? 'Not Available' : (h.areaSqm ? `${h.areaSqm} sqm` : '—')}
                           </div>
                         </div>
                       );
@@ -449,7 +466,7 @@ export default function BookingForm({
               </button>
             </div>
 
-            <div className="card" style={{ background: 'rgba(255,255,255,0.02)' }}>
+            <div className="card" style={{ background: 'var(--bg-overlay)', border: '1px solid var(--border)' }}>
                <CheckCircle2 size={16} style={{ color: 'var(--gold)', marginBottom: 10 }} />
                <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                  {isEditMode 

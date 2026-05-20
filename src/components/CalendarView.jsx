@@ -67,7 +67,7 @@ function BookingDetailModal({ booking, onClose, onEdit, onCancel }) {
     <div
       style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(0,0,0,0.72)',
+        background: 'var(--modal-backdrop)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         backdropFilter: 'blur(4px)',
       }}
@@ -234,17 +234,22 @@ function BookingDetailModal({ booking, onClose, onEdit, onCancel }) {
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const YEARS = Array.from({ length: 10 }, (_, i) => 2024 + i);
 
-const CELL_COLORS = {
-  'cn-booked': { bg: '#DC2626', accent: '#FCA5A5', light: 'rgba(220,38,38,0.25)', text: '#ffffff' },
-  'cn-mounting': { bg: '#D97706', accent: '#FDE68A', light: 'rgba(217,119,6,0.25)', text: '#ffffff' },
-  'cn-reserved': { bg: '#7C3AED', accent: '#C4B5FD', light: 'rgba(124,58,237,0.25)', text: '#ffffff' },
-  'cn-available': { bg: '#16294A', accent: '#3B82F6', light: 'rgba(59,130,246,0.15)', text: '#60A5FA' },
-  'cn-na': { bg: '#223047', accent: '#475569', light: 'rgba(51,65,85,0.20)', text: '#64748B' },
-};
-
 // ── Main CalendarView ─────────────────────────────────────────────────────────
 
-export default function CalendarView({ bookings, venues, onEditBooking, onUpdateStatus, isSidebarOpen, toggleSidebar }) {
+export default function CalendarView({ bookings, venues, onEditBooking, onUpdateStatus, isSidebarOpen, toggleSidebar, theme }) {
+  const isLightTheme = theme === 'light';
+
+  const CELL_COLORS = {
+    'cn-booked': { bg: '#DC2626', accent: '#FCA5A5', light: 'rgba(220,38,38,0.25)', text: '#ffffff' },
+    'cn-mounting': { bg: '#D97706', accent: '#FDE68A', light: 'rgba(217,119,6,0.25)', text: '#ffffff' },
+    'cn-reserved': { bg: '#7C3AED', accent: '#C4B5FD', light: 'rgba(124,58,237,0.25)', text: '#ffffff' },
+    'cn-available': isLightTheme
+      ? { bg: '#E8E6FC', accent: '#A5B4FC', light: 'rgba(79,70,229,0.12)', text: '#4F46E5' }
+      : { bg: '#16294A', accent: '#3B82F6', light: 'rgba(59,130,246,0.15)', text: '#60A5FA' },
+    'cn-na': isLightTheme
+      ? { bg: '#EEEDF5', accent: '#C4C1E0', light: 'rgba(30,27,75,0.10)', text: '#8B85AD' }
+      : { bg: '#223047', accent: '#475569', light: 'rgba(51,65,85,0.20)', text: '#64748B' },
+  };
   const navigate = useNavigate();
   const now = new Date();
 
@@ -315,7 +320,7 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
           font-family: var(--font-body);
         }
         .cn-select:focus { border-color: var(--gold); }
-        .cn-select option { background: #0d1f2d; }
+        .cn-select option { background: var(--bg-overlay); }
 
         .cn-table { border-collapse: collapse; min-width: 100%; }
 
@@ -349,7 +354,7 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
           background: var(--bg-card);
           padding: 0 14px;
           border-right: 2px solid var(--border);
-          border-bottom: 1px solid rgba(255,255,255,0.04);
+          border-bottom: 1px solid var(--border);
           white-space: nowrap;
           height: 38px;
           vertical-align: middle;
@@ -358,7 +363,7 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
           background: rgba(201,168,76,0.07);
         }
         .cn-td-date.is-weekend {
-          background: rgba(255,255,255,0.015);
+          background: var(--bg-overlay);
         }
         .cn-date-label {
           display: flex; align-items: center; gap: 8px;
@@ -380,8 +385,8 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
 
         .cn-hall-td {
           padding: 2px;
-          border-bottom: 1px solid rgba(255,255,255,0.04);
-          border-right: 1px solid rgba(255,255,255,0.04);
+          border-bottom: 1px solid var(--border);
+          border-right: 1px solid var(--border);
           height: 38px;
           vertical-align: middle;
           text-align: center;
@@ -625,7 +630,7 @@ export default function CalendarView({ bookings, venues, onEditBooking, onUpdate
         <div
           style={{
             position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'rgba(0,0,0,0.7)',
+            background: 'var(--modal-backdrop)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             backdropFilter: 'blur(4px)',
           }}

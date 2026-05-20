@@ -208,7 +208,7 @@ export default function AIInsights({ bookings }) {
         .message-row.ai .message-bubble {
           background: var(--bg-overlay);
           color: var(--text-primary);
-          border: 1px solid rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
           border-radius: 14px 14px 14px 2px;
         }
         
@@ -220,7 +220,7 @@ export default function AIInsights({ bookings }) {
         }
         .message-row.user .message-time {
           text-align: right;
-          color: rgba(255,255,255,0.6);
+          color: var(--text-secondary);
         }
         
         /* Typing Dots */
@@ -231,7 +231,7 @@ export default function AIInsights({ bookings }) {
           padding: 12px 20px;
           background: var(--bg-overlay);
           border-radius: 14px;
-          border: 1px solid rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
         }
         .typing-dot {
           width: 6px;
@@ -363,7 +363,7 @@ export default function AIInsights({ bookings }) {
         }
         
         .data-kpi {
-          background: rgba(255,255,255,0.02);
+          background: var(--bg-overlay);
           border: 1px solid var(--border);
           padding: 12px;
           border-radius: 8px;
@@ -387,7 +387,7 @@ export default function AIInsights({ bookings }) {
           padding: 8px 10px;
           background: rgba(255, 255, 255, 0.01);
           border-radius: 6px;
-          border: 1px solid rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
           font-size: 0.78rem;
           display: flex;
           justify-content: space-between;

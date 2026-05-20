@@ -21,7 +21,7 @@ export default function UtilizationReport({ bookings, venues }) {
       </SectionTitle>
 
       <div className="stats-grid" style={{ marginBottom:20 }}>
-        <StatCard label="Overall Utilization" value={`${computed.utilizationPercent}%`}  sub={`${computed.activeBookedDays} of ${computed.totalHallDays} hall-days`} color="#C9A84C" highlight />
+        <StatCard label="Overall Utilization" value={`${computed.utilizationPercent}%`}  sub={`${computed.activeBookedDays} of ${computed.totalHallDays} hall-days`} color="var(--gold)" highlight />
         <StatCard label="Confirmed Usage"      value={`${Math.round((computed.confirmedHallDays/Math.max(1,computed.totalHallDays))*100)}%`} sub={`${computed.confirmedHallDays} confirmed hall-days`} color="#4ADE80" />
         <StatCard label="Idle Capacity"        value={computed.idleHallDays}              sub="Available hall-days in range"  color="#F87171" />
         <StatCard label="Tracked Halls"        value={computed.hallAllocation.length}     sub={`Across ${venues.length} venue(s)`} />
@@ -54,12 +54,12 @@ export default function UtilizationReport({ bookings, venues }) {
                 }))}
                 layout="vertical" margin={{ top:5, right:20, bottom:5, left:90 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis type="number" domain={[0,100]} tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" width={90} tick={{ fill:'#9A8F7A', fontSize:9 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis type="number" domain={[0,100]} tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" width={90} tick={{ fill:'var(--text-secondary)', fontSize:9 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Legend formatter={v => <span style={{ fontSize:10, color:'#9A8F7A' }}>{v}</span>} iconSize={6} />
-                <Bar dataKey="utilization" name="Utilization %" fill="#C9A84C" radius={[0,4,4,0]} />
+                <Legend formatter={v => <span style={{ fontSize:10, color:'var(--text-secondary)' }}>{v}</span>} iconSize={6} />
+                <Bar dataKey="utilization" name="Utilization %" fill="var(--gold)" radius={[0,4,4,0]} />
                 <Bar dataKey="confirmed"   name="Confirmed %"  fill="#4ADE80" radius={[0,4,4,0]} />
               </BarChart>
             </ResponsiveContainer>

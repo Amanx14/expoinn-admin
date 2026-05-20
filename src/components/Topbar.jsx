@@ -1,4 +1,4 @@
-import { Bell, Plus, Search } from 'lucide-react';
+import { Bell, Plus, Search, Sun, Moon } from 'lucide-react';
 
 const pageTitles = {
   dashboard:    'Booking Management Engine',
@@ -13,7 +13,7 @@ const pageTitles = {
   users:        'User Management',
 };
 
-export default function Topbar({ page, onNav, onAddClick }) {
+export default function Topbar({ page, onNav, onAddClick, theme, toggleTheme }) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
 
@@ -31,9 +31,32 @@ export default function Topbar({ page, onNav, onAddClick }) {
           </button>
         )}
       </div>
-      <div className="topbar-right">
+      <div className="topbar-right" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
         <div className="topbar-date">{dateStr}</div>
+        <button
+          onClick={toggleTheme}
+          className="btn btn-ghost"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+            borderRadius: '50%',
+            width: 36,
+            height: 36,
+            minWidth: 36,
+            border: '1px solid var(--border)',
+            background: 'var(--bg-card)',
+            color: 'var(--gold)',
+            cursor: 'pointer',
+            transition: 'var(--transition)',
+          }}
+          title={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+        >
+          {theme === 'dark' ? <Sun size={17} /> : <Moon size={17} />}
+        </button>
       </div>
     </header>
   );
 }
+

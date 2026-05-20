@@ -22,7 +22,7 @@ export default function HallAllocationReport({ bookings, venues }) {
 
       <div className="stats-grid" style={{ marginBottom:20 }}>
         <StatCard label="Total Halls Tracked"  value={computed.hallAllocation.length} sub={`Across ${venues.length} venues`} />
-        <StatCard label="Highest Occupancy"    value={`${computed.hallAllocation[0]?.occupancy ?? 0}%`} sub={`${computed.hallAllocation[0]?.venue} / ${computed.hallAllocation[0]?.hall}`} color="#C9A84C" />
+        <StatCard label="Highest Occupancy"    value={`${computed.hallAllocation[0]?.occupancy ?? 0}%`} sub={`${computed.hallAllocation[0]?.venue} / ${computed.hallAllocation[0]?.hall}`} color="var(--gold)" />
         <StatCard label="Prime Date Usage"     value={`${computed.hallAllocation.reduce((s,h)=>s+h.primeDateDays,0)} days`} sub="Total HD-period bookings" color="#F87171" />
         <StatCard label="Range"                value={`${computed.rangeDays} days`} sub={`${dayKey(computed.rangeStart)} → ${dayKey(computed.rangeEnd)}`} />
       </div>
@@ -53,12 +53,12 @@ export default function HallAllocationReport({ bookings, venues }) {
               data={computed.hallAllocation.map(h => ({ name:`${h.venue.split(' ')[0]} / ${h.hall}`, occupancy:h.occupancy, prime:h.primeDateUsagePct }))}
               layout="vertical" margin={{ top:5, right:20, bottom:5, left:100 }}
             >
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis type="number" domain={[0,100]} tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis dataKey="name" type="category" width={100} tick={{ fill:'#9A8F7A', fontSize:10 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis type="number" domain={[0,100]} tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+              <YAxis dataKey="name" type="category" width={100} tick={{ fill:'var(--text-secondary)', fontSize:10 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend formatter={v => <span style={{ fontSize:10, color:'#9A8F7A' }}>{v}</span>} iconSize={6} />
-              <Bar dataKey="occupancy" name="Occupancy %" fill="#C9A84C" radius={[0,4,4,0]} />
+              <Legend formatter={v => <span style={{ fontSize:10, color:'var(--text-secondary)' }}>{v}</span>} iconSize={6} />
+              <Bar dataKey="occupancy" name="Occupancy %" fill="var(--gold)" radius={[0,4,4,0]} />
               <Bar dataKey="prime"     name="Prime Usage %" fill="#F87171" radius={[0,4,4,0]} />
             </BarChart>
           </ResponsiveContainer>

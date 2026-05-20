@@ -137,15 +137,15 @@ export default function OverviewReport({ bookings, venues }) {
               <AreaChart data={computed.monthlySeries} margin={{ top:5, right:10, bottom:0, left:-18 }}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="#C9A84C" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--gold)" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="var(--gold)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="month" tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="revenueLakhs" name="Revenue (Rs L)" stroke="#C9A84C" strokeWidth={2} fill="url(#revGrad)" />
+                <Area type="monotone" dataKey="revenueLakhs" name="Revenue (Rs L)" stroke="var(--gold)" strokeWidth={2} fill="url(#revGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -160,7 +160,7 @@ export default function OverviewReport({ bookings, venues }) {
                 <Pie data={computed.statusSeries} cx="50%" cy="50%" innerRadius={58} outerRadius={88} paddingAngle={3} dataKey="value" nameKey="name">
                   {computed.statusSeries.map(e => <Cell key={e.name} fill={e.color} />)}
                 </Pie>
-                <Legend formatter={v => <span style={{ fontSize:10, color:'#9A8F7A' }}>{v}</span>} iconSize={6} />
+                <Legend formatter={v => <span style={{ fontSize:10, color:'var(--text-secondary)' }}>{v}</span>} iconSize={6} />
                 <Tooltip content={<CustomTooltip />} />
               </PieChart>
             </ResponsiveContainer>
@@ -170,7 +170,7 @@ export default function OverviewReport({ bookings, venues }) {
 
       {/* Banners of Quick Insights */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))', gap:12, marginTop:16 }}>
-        <InsightBox icon={TrendingUp} color="#C9A84C" title="Top Industry"       value={computed.industrySeries[0]?.name || '—'}           sub={formatMoney(computed.industrySeries[0]?.revenue)} />
+        <InsightBox icon={TrendingUp} color="var(--gold)" title="Top Industry"       value={computed.industrySeries[0]?.name || '—'}           sub={formatMoney(computed.industrySeries[0]?.revenue)} />
         <InsightBox icon={Home}       color="#6B9EC9" title="Busiest Hall"        value={computed.hallAllocation[0] ? `${computed.hallAllocation[0].venue} / ${computed.hallAllocation[0].hall}` : '—'} sub={`${computed.hallAllocation[0]?.occupancy ?? 0}% occupancy`} />
         <InsightBox icon={Activity}   color="#4ADE80" title="Peak Month"          value={computed.peakMonths[0]?.month || '—'}               sub={`${computed.peakMonths[0]?.bookings ?? 0} bookings`} />
         <InsightBox icon={Zap}        color="#F87171" title="Critical Conflicts"  value={computed.criticalConflicts.length}                   sub={computed.criticalConflicts.length ? 'Confirmed vs Confirmed' : 'None detected'} />

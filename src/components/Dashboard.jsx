@@ -36,10 +36,10 @@ const CustomTooltip = ({ active, payload, label }) => {
   }
 
   return (
-    <div style={{ background: '#111927', border: '1px solid rgba(201,168,76,0.3)', borderRadius: 8, padding: '10px 14px', fontSize: 13 }}>
-      <div style={{ color: '#C9A84C', fontWeight: 600, marginBottom: 4 }}>{label}</div>
-      <div style={{ color: '#F0E8D4' }}>Rs{payload[0].value}L revenue</div>
-      <div style={{ color: '#9A8F7A' }}>{payload[1]?.value} bookings</div>
+    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--gold-border)', borderRadius: 8, padding: '10px 14px', fontSize: 13, boxShadow: 'var(--shadow-gold)' }}>
+      <div style={{ color: 'var(--gold)', fontWeight: 600, marginBottom: 4 }}>{label}</div>
+      <div style={{ color: 'var(--text-primary)' }}>Rs{payload[0].value}L revenue</div>
+      <div style={{ color: 'var(--text-secondary)' }}>{payload[1]?.value} bookings</div>
     </div>
   );
 };
@@ -107,15 +107,15 @@ export default function Dashboard({ bookings, venues, onNav, onUpdateStatus, cur
               <AreaChart data={monthlySeries} margin={{ top: 5, right: 5, bottom: 0, left: -20 }}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C9A84C" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#C9A84C" stopOpacity={0} />
+                    <stop offset="5%" stopColor="var(--gold)" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="var(--gold)" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis dataKey="month" tick={{ fill: '#5A5248', fontSize: 11 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: '#5A5248', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="revenue" stroke="#C9A84C" strokeWidth={2} fill="url(#revGrad)" dot={{ fill: '#C9A84C', r: 3 }} />
+                <Area type="monotone" dataKey="revenue" stroke="var(--gold)" strokeWidth={2} fill="url(#revGrad)" dot={{ fill: 'var(--gold)', r: 3 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>

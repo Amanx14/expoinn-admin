@@ -27,9 +27,9 @@ export default function CompetitiveReport({ bookings, venues }) {
           <div style={{ height:280 }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={computed.industrySeries} layout="vertical" margin={{ top:5, right:20, bottom:5, left:88 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                <XAxis type="number" tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-                <YAxis dataKey="name" type="category" width={88} tick={{ fill:'#9A8F7A', fontSize:10 }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis type="number" tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+                <YAxis dataKey="name" type="category" width={88} tick={{ fill:'var(--text-secondary)', fontSize:10 }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar dataKey="revenueLakhs" name="Revenue (Rs L)" radius={[0,4,4,0]}>
                   {computed.industrySeries.map(e => <Cell key={e.name} fill={e.color} />)}
@@ -64,7 +64,7 @@ export default function CompetitiveReport({ bookings, venues }) {
             key: item.name,
             cells: [
               <strong>{item.name}</strong>, item.bookings, item.sectorCount, item.organizerCount,
-              <span style={{ color: item.marketShare > 30 ? '#C9A84C' : 'inherit' }}>{item.marketShare}%</span>,
+              <span style={{ color: item.marketShare > 30 ? 'var(--gold)' : 'inherit' }}>{item.marketShare}%</span>,
               <span style={{ color:'var(--gold)', fontWeight:600 }}>{formatMoney(item.revenue)}</span>,
               <span style={{ fontSize:'0.75rem', color:'var(--text-muted)' }}>
                 {item.organizerCount > 2 ? `High competition: ${item.organizerCount} organizers` : item.organizerCount === 2 ? 'Duopoly — monitor closely' : 'Single-organizer: captive opportunity'}
@@ -79,9 +79,9 @@ export default function CompetitiveReport({ bookings, venues }) {
         <div style={{ height:200 }}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={computed.organizerSeries.slice(0,8)} layout="vertical" margin={{ top:5, right:20, bottom:5, left:100 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-              <XAxis type="number" tick={{ fill:'#5A5248', fontSize:11 }} axisLine={false} tickLine={false} />
-              <YAxis dataKey="name" type="category" width={100} tick={{ fill:'#9A8F7A', fontSize:10 }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis type="number" tick={{ fill:'var(--text-muted)', fontSize:11 }} axisLine={false} tickLine={false} />
+              <YAxis dataKey="name" type="category" width={100} tick={{ fill:'var(--text-secondary)', fontSize:10 }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="revenueLakhs" name="Revenue (Rs L)" radius={[0,4,4,0]}>
                 {computed.organizerSeries.slice(0,8).map((e,i) => <Cell key={e.name} fill={CHART_COLORS[i%CHART_COLORS.length]} />)}
